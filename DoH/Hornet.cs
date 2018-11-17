@@ -314,7 +314,7 @@ namespace DoH
         }
         private void Update()
         {
-            if (_hm.hp <= 1150)
+            if (_hm.hp <= 1500)
             {
                 var wX = weaver.transform.GetPositionX();
                 var wY = weaver.transform.GetPositionY();
@@ -355,6 +355,7 @@ namespace DoH
                         dang = true;
                     }
                     _control.InsertCoroutine("Throw", 0, needleSpread);
+
                 }
                 if (Mathf.Abs(wX - hX) >= 0 && Mathf.Abs(wX - hX) <= 1 && Mathf.Abs(wY - hY) >= 0 && Mathf.Abs(wY - hY) <= 1 && _hm.hp <= 1400)
                 {
@@ -369,6 +370,20 @@ namespace DoH
                         needles[i].GetComponent<Rigidbody2D>().rotation = 90f;
                         needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0, -30f);
                     }
+                }
+                try
+                {
+                    if (_control.ActiveStateName == "Throw")
+                    {
+                        Log("STOP UNFAIRNESS");
+                        _control.GetAction<ActivateGameObject>("Sphere Recover A", 1).gameObject.GameObject.Value.SetActive(false);
+                        _control.GetAction<ActivateGameObject>("Sphere Recover", 1).gameObject.GameObject.Value.SetActive(false);
+                        Log("UNFAIRNESS STOPPED");
+                    }
+                }
+                catch(System.Exception e)
+                {
+                    Log(e);
                 }
             }
             if (_hm.hp <= 800)
@@ -454,6 +469,13 @@ namespace DoH
                 }
                 //Make lava particle follow her
                 wave.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+                if (_control.ActiveStateName == "Throw")
+                {
+                    Log("STOP UNFAIRNESS");
+                    _control.GetAction<ActivateGameObject>("Sphere Recover A", 1).gameObject.GameObject.Value.SetActive(false);
+                    _control.GetAction<ActivateGameObject>("Sphere Recover", 1).gameObject.GameObject.Value.SetActive(false);
+                    Log("UNFAIRNESS STOPPED");
+                }
             }
             if (needle.transform.GetPositionX() <= 12)
             {
