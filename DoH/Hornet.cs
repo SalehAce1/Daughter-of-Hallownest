@@ -38,6 +38,7 @@ namespace DoH
         private GameObject needle2;
         private GameObject canvas;
         private GameObject weaver;
+        private GameObject[] needles = new GameObject[10];
 
         private Text textExample;
 
@@ -45,13 +46,17 @@ namespace DoH
         private GameObject grubL;
         private GameObject[] grubAll = new GameObject[10];
         private GameObject wave;
-       
+        private GameObject greatSlash;
+
 
         float timeLeft;
         float heightNeedle1;
         float heightNeedle2;
         float needleVelocity;
         float height;
+        float timer = 3f;
+        bool dang;
+        float angle = 0;
         private bool finalPhase = false;
         private bool secondPhase = false;
 
@@ -168,8 +173,7 @@ namespace DoH
             {
                 Log("Create a copy of the needle and use it as a horizontal attack");
                 needle = Instantiate(_control.GetAction<SetPosition>("Throw", 4).gameObject.GameObject.Value);
-                _needleControl = needle.LocateMyFSM("Control");
-                _needleControl.ChangeTransition("Out", "FINISHED", "Notify");
+                Destroy(needle.LocateMyFSM("Control"));
                 needle.SetActive(true);
                 this.needle.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
                 needle.transform.SetPosition2D(12, 35);
@@ -184,8 +188,7 @@ namespace DoH
 
                 Log("Create a copy of the needle and use it as a horizontal attack");
                 needle2 = Instantiate(_control.GetAction<SetPosition>("Throw", 4).gameObject.GameObject.Value);
-                _needleControl2 = needle2.LocateMyFSM("Control");
-                _needleControl2.ChangeTransition("Out", "FINISHED", "Notify");
+                Destroy(needle2.LocateMyFSM("Control"));
                 needle2.SetActive(true);
                 this.needle2.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
                 needle2.transform.SetPosition2D(40, 35);
@@ -242,6 +245,19 @@ namespace DoH
             _control.GetAction<Wait>("Sphere", 4).time = 0.3f;
             _control.GetAction<Wait>("Sphere A", 4).time = 0.3f;
 
+            for (int i = 0; i < needles.Length; i++)
+            {
+                needles[i] = Instantiate(_control.GetAction<SetPosition>("Throw", 4).gameObject.GameObject.Value);
+                Destroy(needles[i].LocateMyFSM("Control"));
+                needles[i].AddComponent<TinkEffect>();
+                UnityEngine.Object.Destroy(needles[i].GetComponent<NonBouncer>());
+                var tink = UnityEngine.Object.Instantiate(GameObject.Find("Needle Tink")).AddComponent<ModCommon.NeedleTink>();
+                tink.SetParent(needles[i].transform);
+                needles[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+                needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(-15f, i * 5f);
+                needles[i].SetActive(false);
+            }
+
             Log("fin.");
         }
         public void grubberAttack()
@@ -296,14 +312,9 @@ namespace DoH
             }
             
         }
-        
         private void Update()
         {
-            if (grubAll[0]!=null)
-            {
-                Log(grubAll[0].GetComponent<Rigidbody2D>().velocity.x);
-            }
-            if (_hm.hp <= 1400)
+            if (_hm.hp <= 1150)
             {
                 var wX = weaver.transform.GetPositionX();
                 var wY = weaver.transform.GetPositionY();
@@ -311,6 +322,62 @@ namespace DoH
                 var hY = gameObject.transform.GetPositionY();
                 if (!secondPhase)
                 {
+                    Log("Add Weaver Boios");
+                    _control.InsertMethod("Sphere", 0, createWeaver);
+                    _control.InsertMethod("Sphere A", 0, createWeaver);
+                    textExample.text = "Mother forgive my inaction.";
+                    secondPhase = true;
+                    IEnumerator needleSpread()
+                    {
+                        if (gameObject.transform.localPosition.x < 0 && !dang)
+                        {
+                            for (int i = 0; i < needles.Length; i++)
+                            {
+                                needles[i].SetActive(true);
+                                needles[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+                                needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(30f, i * 4f);
+                                needles[i].GetComponent<Rigidbody2D>().rotation = (Mathf.Rad2Deg * (Mathf.Atan(needles[i].GetComponent<Rigidbody2D>().velocity.y / needles[i].GetComponent<Rigidbody2D>().velocity.x))) + 180f;
+                                yield return new WaitForSeconds(0.01f);
+                            }
+                        }
+                        else if (!dang)
+                        {
+                            for (int i = 0; i < needles.Length; i++)
+                            {
+                                Log("1What happened?");
+                                needles[i].SetActive(true);
+                                needles[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+                                needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(-30f, i * 4f);
+                                needles[i].GetComponent<Rigidbody2D>().rotation = Mathf.Rad2Deg * (Mathf.Atan(needles[i].GetComponent<Rigidbody2D>().velocity.y / needles[i].GetComponent<Rigidbody2D>().velocity.x));
+                                yield return new WaitForSeconds(0.01f);
+                            }
+                        }
+                        dang = true;
+                    }
+                    _control.InsertCoroutine("Throw", 0, needleSpread);
+                }
+                if (Mathf.Abs(wX - hX) >= 0 && Mathf.Abs(wX - hX) <= 1 && Mathf.Abs(wY - hY) >= 0 && Mathf.Abs(wY - hY) <= 1 && _hm.hp <= 1400)
+                {
+                    _hm.hp += 5;
+                }
+                if ((needles[9].transform.GetPositionX() > 40 || needles[9].transform.GetPositionX() < 12) && dang)
+                {
+                    dang = false;
+                    for (int i = 0; i < needles.Length; i++)
+                    {
+                        needles[i].transform.SetPosition2D(i * 2.6f + 15f, 45);
+                        needles[i].GetComponent<Rigidbody2D>().rotation = 90f;
+                        needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0, -30f);
+                    }
+                }
+            }
+            if (_hm.hp <= 800)
+            {
+                if (!finalPhase)
+                {
+                    wave = Instantiate(DoH.wavePref);
+                    wave.SetActive(true);
+
                     needle.SetActive(false);
                     needle2.SetActive(false);
                     Log("Do da grubber throw boiu");
@@ -329,9 +396,6 @@ namespace DoH
                         grubberAttack2();
                     }
                     _control.InsertCoroutine("Jump2", 0, GrubBoiThrow);
-                    Log("Add Weaver Boios");
-                    _control.InsertMethod("Sphere", 0, createWeaver);
-                    _control.InsertMethod("Sphere A", 0, createWeaver);
                     IEnumerator GrubFill()
                     {
                         height = gameObject.transform.GetPositionY() + 5f;
@@ -385,30 +449,7 @@ namespace DoH
                     }
                     _control.InsertCoroutine("Sphere Recover", 0, GrubFill);
                     _control.InsertCoroutine("Sphere Recover A", 0, GrubFill);
-                    textExample.text = "Mother forgive my inaction.";
-                    secondPhase = true;
-                }
-                if (Mathf.Abs(wX-hX) >= 0 && Mathf.Abs(wX - hX) <= 1 && Mathf.Abs(wY - hY) >= 0 && Mathf.Abs(wY - hY) <= 1 && _hm.hp <= 1400)
-                {
-                    _hm.hp += 1;
-                }
-            }
-            if (_hm.hp <= 500)
-            {
-                if (!finalPhase)
-                {
-                    //Start lava particle
-                    wave = Instantiate(DoH.wavePref);
-                    wave.SetActive(true);
-                    //Remove extended sphere
-                    _control.RemoveAction("Sphere Recover A", 1);
-                    _control.RemoveAction("Sphere Recover", 1);
-                    _control.InsertAction("Sphere Recover A", _control.GetAction<ActivateGameObject>("Sphere Recover A Old", 1), 1);
-                    _control.InsertAction("Sphere Recover", _control.GetAction<ActivateGameObject>("Sphere Recover Old", 1), 1);
-                    //Text
                     textExample.text = "I can't let you win ghost.";
-                    //Make her spam air dash
-                    _control.ChangeTransition("In Air", "LAND", "ADash Antic");
                     finalPhase = true;
                 }
                 //Make lava particle follow her
@@ -428,12 +469,12 @@ namespace DoH
             if (needle2.transform.GetPositionX() <= 12)
             {
                 needle2.transform.SetPosition2D(12, heightNeedle2);
-                needle2.GetComponent<Rigidbody2D>().rotation = 180;
+                needle2.GetComponent<Rigidbody2D>().rotation = 180f;
                 needle2.GetComponent<Rigidbody2D>().velocity = new Vector2(needleVelocity, 0);
             }
             else if (needle2.transform.GetPositionX() >= 40)
             {
-                needle2.GetComponent<Rigidbody2D>().rotation = 0;
+                needle2.GetComponent<Rigidbody2D>().rotation = 0f;
                 needle2.GetComponent<Rigidbody2D>().velocity = new Vector2(-1 * needleVelocity, 0);
             }
 
@@ -441,10 +482,6 @@ namespace DoH
             {
                 textExample.text = "Healing is for the weak ghost";
                 _control.SetState("G Dash 2");
-            }
-            else if (HeroController.instance.cState.focusing && _control.transform.GetPositionY() > 29)
-            {
-                //Cant get her to attack the knight properly. Maybe have needle hit knight?
             }
 
             if (!textExample.text.Equals(""))

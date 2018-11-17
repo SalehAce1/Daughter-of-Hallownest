@@ -24,6 +24,7 @@ namespace DoH
         public static GameObject grubRPref;
         public static GameObject grubLPref;
         public static GameObject wavePref;
+        public static GameObject sheildPref;
 
         public override string GetVersion()
         {
@@ -61,6 +62,10 @@ namespace DoH
                 else if (i.name == "lava_particles_03")
                 {
                     wavePref = i;
+                }
+                else if (i.name == "Orbit Shield")
+                {
+                    sheildPref = i;
                 }
             }
 
