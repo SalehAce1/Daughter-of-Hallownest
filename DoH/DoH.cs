@@ -20,6 +20,11 @@ namespace DoH
 
         internal bool IsInHall => _lastScene == "GG_Workshop";
 
+        public static GameObject weaverPref;
+        public static GameObject grubRPref;
+        public static GameObject grubLPref;
+        public static GameObject wavePref;
+
         public override string GetVersion()
         {
             return FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(DoH)).Location).FileVersion;
@@ -37,6 +42,27 @@ namespace DoH
 
             int ind = 0;
             Assembly asm = Assembly.GetExecutingAssembly();
+
+            Resources.LoadAll<GameObject>("");
+            foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (i.name == "Weaverling")
+                {
+                    weaverPref = i;
+                }
+                else if (i.name == "Grubberfly BeamR R")
+                {
+                    grubRPref = i;
+                }
+                else if (i.name == "Grubberfly BeamL R")
+                {
+                    grubLPref = i;
+                }
+                else if (i.name == "lava_particles_03")
+                {
+                    wavePref = i;
+                }
+            }
 
         }
 

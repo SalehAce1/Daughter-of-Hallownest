@@ -19,8 +19,10 @@ namespace DoH
         private readonly Dictionary<string, float> _fpsDict = new Dictionary<string, float> //Use to change animation speed
         {
             //["Run"] = 100
-            ["Counter Attack 1"] = 8,
-            ["Counter Attack 2"] = 8
+            ["Sphere Antic A Q"] = 20,
+            ["Sphere Recover A"] = 20,
+            ["Sphere Antic G"] = 20,
+            ["Sphere Recover G"] = 20
         };
         public static HealthManager _hm;
         private tk2dSpriteAnimator _anim;
@@ -36,14 +38,14 @@ namespace DoH
         private GameObject needle2;
         private GameObject canvas;
         private GameObject weaver;
-        private GameObject weaverPref;
+
         private Text textExample;
-        private GameObject grubRPref;
+
         private GameObject grubR;
-        private GameObject grubLPref;
         private GameObject grubL;
+        private GameObject[] grubAll = new GameObject[10];
         private GameObject wave;
-        private GameObject wavePref;
+       
 
         float timeLeft;
         float heightNeedle1;
@@ -64,26 +66,6 @@ namespace DoH
             _control = gameObject.LocateMyFSM("Control");
             _recoil = gameObject.GetComponent<Recoil>();
             _anim = gameObject.GetComponent<tk2dSpriteAnimator>();
-            Resources.LoadAll<GameObject>("");
-            foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
-            {
-                if (i.name == "Weaverling")
-                {
-                    weaverPref = i;
-                }
-                else if (i.name == "Grubberfly BeamR R")
-                {
-                    grubRPref = i;
-                }
-                else if (i.name == "Grubberfly BeamL R")
-                {
-                    grubLPref = i;
-                }
-                else if (i.name == "lava_particles_03")
-                {
-                    wavePref = i;
-                }
-            }
         }
 
         private void Start()
@@ -110,13 +92,6 @@ namespace DoH
 
             // Disable Knockback
             _recoil.enabled = false;
-
-            // 2x Damage on All Components: Enable this later...
-            /*foreach (DamageHero i in gameObject.GetComponentsInChildren<DamageHero>(true))
-            {
-                Log(i.name);
-                i.damageDealt *= 2;
-            }*/
 
             // Speed up some attacks.
             try
@@ -145,7 +120,7 @@ namespace DoH
             var go2 = _control.GetAction<ActivateGameObject>("Sphere Recover", 1).gameObject.GameObject.Value;
             IEnumerator ActivateSphereA()
             {
-                Log("Hornet: Activate Air turbo sphere mode, DIE little Ghost. get nae-naed");
+                Log("Hornet: Activate Air turbo sphere mode, DIE little Ghost.");
                 go.SetActive(true);
                 yield return new WaitForSeconds(3f);
                 go.SetActive(false);
@@ -232,7 +207,7 @@ namespace DoH
 
                 Log("Skip waiting for player to hit her counter and never do the dumb evade move");
                 _control.GetAction<Wait>("Counter Stance", 1).time = 0f;
-                _control.ChangeTransition("Counter Stance", "FINISHED", "CA 1");
+                _control.ChangeTransition("Counter Stance", "FINISHED", "CA Antic");
 
                 Log("Choose Counter over Evade");
                 _control.GetAction<SendRandomEvent>("Ev Or Counter", 0).weights[0] = 0f;
@@ -251,7 +226,7 @@ namespace DoH
             
 
             Log("Added health recovery with Weavers.");
-            weaver = Instantiate(weaverPref);
+            weaver = Instantiate(DoH.weaverPref);
             weaver.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
             var warpDelete = weaver.LocateMyFSM("Warp To Hero");
             _weaverControl = weaver.LocateMyFSM("Control");
@@ -261,43 +236,47 @@ namespace DoH
             weaver.AddComponent<WeaverScript>();
             weaver.SetActive(false);
 
+            //Stops the dumb freeze effect when the counter occurs
+            _control.RemoveAction("CA Antic", 1);
+
+            _control.GetAction<Wait>("Sphere", 4).time = 0.3f;
+            _control.GetAction<Wait>("Sphere A", 4).time = 0.3f;
+
             Log("fin.");
         }
         public void grubberAttack()
         {
       
-            if (HeroController.instance.gameObject.transform.GetPositionX() - gameObject.transform.GetPositionX() > 0)
-            {
-                grubR = Instantiate(grubRPref);
-                _beamControlR = grubR.LocateMyFSM("Control");
-                _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
-                Destroy(grubR.LocateMyFSM("damagesenemy"));
-                grubR.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
-                grubR.AddComponent<DamageHero>();
-                grubR.GetComponent<DamageHero>().damageDealt *= 2;
-                grubR.SetActive(true);
-            }
-            else
-            {
-                grubL = Instantiate(grubLPref);
-                _beamControlL = grubL.LocateMyFSM("Control");
-                _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
-                Destroy(grubL.LocateMyFSM("damagesenemy"));
-                grubL.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
-                grubL.AddComponent<DamageHero>();
-                grubL.GetComponent<DamageHero>().damageDealt *= 2;
-                grubL.SetActive(true);
-            }
+            grubR = Instantiate(DoH.grubRPref);
+            _beamControlR = grubR.LocateMyFSM("Control");
+            _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
+            _beamControlR.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+            Destroy(grubR.LocateMyFSM("damages_enemy"));
+            grubR.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+            grubR.AddComponent<DamageHero>();
+            grubR.GetComponent<DamageHero>().damageDealt *= 2;
+            grubR.SetActive(true);
+
+            grubL = Instantiate(DoH.grubLPref);
+            _beamControlL = grubL.LocateMyFSM("Control");
+            _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
+            _beamControlL.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+            Destroy(grubL.LocateMyFSM("damages_enemy"));
+            grubL.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+            grubL.AddComponent<DamageHero>();
+            grubL.GetComponent<DamageHero>().damageDealt *= 2;
+            grubL.SetActive(true);
             
         }
         public void grubberAttack2()
         {
-            if (HeroController.instance.gameObject.transform.GetPositionX() - gameObject.transform.GetPositionX() > 0)
+            if (gameObject.transform.localPosition.x < 0)
             {
-                grubR = Instantiate(grubRPref);
+                grubR = Instantiate(DoH.grubRPref);
                 _beamControlR = grubR.LocateMyFSM("Control");
                 _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
-                Destroy(grubR.LocateMyFSM("damagesenemy"));
+                _beamControlR.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+                Destroy(grubR.LocateMyFSM("damages_enemy"));
                 grubR.transform.SetPosition2D(gameObject.transform.GetPositionX(), HeroController.instance.gameObject.transform.GetPositionY());
                 grubR.AddComponent<DamageHero>();
                 grubR.GetComponent<DamageHero>().damageDealt *= 2;
@@ -305,10 +284,11 @@ namespace DoH
             }
             else
             {
-                grubL = Instantiate(grubLPref);
+                grubL = Instantiate(DoH.grubLPref);
                 _beamControlL = grubL.LocateMyFSM("Control");
                 _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
-                Destroy(grubL.LocateMyFSM("damagesenemy"));
+                _beamControlL.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+                Destroy(grubL.LocateMyFSM("damages_enemy"));
                 grubL.transform.SetPosition2D(gameObject.transform.GetPositionX(), HeroController.instance.gameObject.transform.GetPositionY());
                 grubL.AddComponent<DamageHero>();
                 grubL.GetComponent<DamageHero>().damageDealt *= 2;
@@ -316,9 +296,14 @@ namespace DoH
             }
             
         }
+        
         private void Update()
         {
-            if (_hm.hp <= 1000)
+            if (grubAll[0]!=null)
+            {
+                Log(grubAll[0].GetComponent<Rigidbody2D>().velocity.x);
+            }
+            if (_hm.hp <= 1400)
             {
                 var wX = weaver.transform.GetPositionX();
                 var wY = weaver.transform.GetPositionY();
@@ -330,21 +315,76 @@ namespace DoH
                     needle2.SetActive(false);
                     Log("Do da grubber throw boiu");
                     _control.InsertMethod("CA Recover", 0, grubberAttack);
-                    _control.ChangeTransition("Move Choice B", "G DASH", "CA 1");
+                    _control.ChangeTransition("Move Choice B", "G DASH", "CA Antic");
 
                     IEnumerator GrubBoiThrow()
                     {
-                        yield return new WaitForSeconds(0.2f);
+                        yield return new WaitForSeconds(0.1f);
                         grubberAttack2();
-                        yield return new WaitForSeconds(0.2f);
+                        yield return new WaitForSeconds(0.1f);
                         grubberAttack2();
-                        yield return new WaitForSeconds(0.2f);
+                        yield return new WaitForSeconds(0.1f);
+                        grubberAttack2();
+                        yield return new WaitForSeconds(0.1f);
                         grubberAttack2();
                     }
                     _control.InsertCoroutine("Jump2", 0, GrubBoiThrow);
                     Log("Add Weaver Boios");
                     _control.InsertMethod("Sphere", 0, createWeaver);
                     _control.InsertMethod("Sphere A", 0, createWeaver);
+                    IEnumerator GrubFill()
+                    {
+                        height = gameObject.transform.GetPositionY() + 5f;
+                        for (int i = 0, a = 0; i < 5; i++, a += 2)
+                        {
+                            grubAll[i] = Instantiate(DoH.grubRPref);
+                            _beamControlR = grubAll[i].LocateMyFSM("Control");
+                            _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
+                            _beamControlR.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+                            var initFsm = _beamControlR.GetAction<SetVelocity2d>("Init", 7);
+                            _beamControlR.AddAction("Active", new SetVelocity2d
+                            {
+                                gameObject = initFsm.gameObject,
+                                vector = initFsm.vector,
+                                x = 20,
+                                y = -5,
+                                everyFrame = false
+                            });
+                            Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
+                            grubAll[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
+                            grubAll[i].AddComponent<DamageHero>();
+                            grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
+                            grubAll[i].SetActive(true);
+                            grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(15f, 0);
+                            yield return null;
+                        }
+                        height = gameObject.transform.GetPositionY() + 5f;
+                        for (int i = 5, a = 0; i < 10; i++, a += 2)
+                        {
+                            grubAll[i] = Instantiate(DoH.grubLPref);
+                            _beamControlL = grubAll[i].LocateMyFSM("Control");
+                            _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
+                            _beamControlL.ChangeTransition("Active", "DEALT DAMAGE", "Active");
+                            var initFsm = _beamControlL.GetAction<SetVelocity2d>("Init", 7);
+                            _beamControlL.AddAction("Active", new SetVelocity2d
+                            {
+                                gameObject = initFsm.gameObject,
+                                vector = initFsm.vector,
+                                x = -20,
+                                y = -5,
+                                everyFrame = false
+                            });
+                            Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
+                            grubAll[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
+                            grubAll[i].AddComponent<DamageHero>();
+                            grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
+                            grubAll[i].SetActive(true);
+                            grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(15f, 0);
+                            yield return null;
+                        }
+                    }
+                    _control.InsertCoroutine("Sphere Recover", 0, GrubFill);
+                    _control.InsertCoroutine("Sphere Recover A", 0, GrubFill);
                     textExample.text = "Mother forgive my inaction.";
                     secondPhase = true;
                 }
@@ -358,7 +398,7 @@ namespace DoH
                 if (!finalPhase)
                 {
                     //Start lava particle
-                    wave = Instantiate(wavePref);
+                    wave = Instantiate(DoH.wavePref);
                     wave.SetActive(true);
                     //Remove extended sphere
                     _control.RemoveAction("Sphere Recover A", 1);
@@ -428,6 +468,7 @@ namespace DoH
             if (!weaver.activeSelf)
             {
                 weaver.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
+                weaver.AddComponent<DamageEnemies>().damageDealt = 0;
                 weaver.SetActive(true);
             }
         }
