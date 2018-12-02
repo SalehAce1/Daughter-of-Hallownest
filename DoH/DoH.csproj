@@ -74,13 +74,21 @@
     <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BeeControl.cs" />
     <Compile Include="DoH.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FireBatThrow.cs" />
+    <Compile Include="FireBatThrow2.cs" />
+    <Compile Include="FocusCounter.cs" />
     <Compile Include="FsmUtil.cs" />
+    <Compile Include="GoInCircle.cs" />
     <Compile Include="Hornet.cs" />
     <Compile Include="HornetFinder.cs" />
+    <Compile Include="MantisThrow.cs" />
+    <Compile Include="OrbThrow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeaverScript.cs" />
+    <Compile Include="DashDeathG.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

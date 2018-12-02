@@ -24,7 +24,7 @@ namespace DoH
         public static GameObject grubRPref;
         public static GameObject grubLPref;
         public static GameObject wavePref;
-        public static GameObject sheildPref;
+        public static GameObject backgroundPart;
 
         public override string GetVersion()
         {
@@ -59,14 +59,18 @@ namespace DoH
                 {
                     grubLPref = i;
                 }
-                else if (i.name == "lava_particles_03")
+                else if (i.name == "lava_particles_03")//grimm_flame_particle")//lava_particles_03") 
                 {
                     wavePref = i;
+                    //ModCommon.GameObjectExtensions.PrintSceneHierarchyTree(wavePref);
                 }
-                else if (i.name == "Orbit Shield")
+                else if (i.name == "outskirts_particles")
                 {
-                    sheildPref = i;
+                    backgroundPart = i;
                 }
+                //Particle Wave: Void particle that emites radially 
+                //grimm_flame_particle: fire particle
+                //lava_particles_03: 4 red dots stuck together
             }
 
         }

@@ -37,7 +37,7 @@ namespace DoH
         }
         private static void Log(object obj)
         {
-            Logger.Log("[Daughter of Hallownest] " + obj);
+            Logger.Log("[Weaver] " + obj);
         }
     }
 }
