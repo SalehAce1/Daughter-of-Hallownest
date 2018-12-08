@@ -100,3 +100,10 @@ C:\Users\ghaem\Desktop\Programms\HK Code\DoH\DoH\obj\Debug\DoH.csproj.CopyComple
 C:\Users\ghaem\Desktop\Programms\HK Code\DoH\DoH\obj\Debug\DoH.dll
 C:\Users\ghaem\Desktop\Programms\HK Code\DoH\DoH\obj\Debug\DoH.pdb
 C:\Users\ghaem\Desktop\Programms\HK Code\DoH\DoH\obj\Debug\DoH.csprojResolveAssemblyReference.cache
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\bin\Debug\DoH.dll
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\bin\Debug\DoH.pdb
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\obj\Debug\DoH.csproj.CoreCompileInputs.cache
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\obj\Debug\DoH.csproj.CopyComplete
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\obj\Debug\DoH.dll
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\obj\Debug\DoH.pdb
+C:\Users\ghaem\Desktop\Programms\HK Code\Github\DoH\DoH\obj\Debug\DoH.csprojResolveAssemblyReference.cache

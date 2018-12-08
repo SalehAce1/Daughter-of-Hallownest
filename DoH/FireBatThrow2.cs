@@ -36,10 +36,24 @@ namespace DoH
             }
         }
 
+        bool first = true;
         void Update()
         {
             //_batReal.transform.localScale = gameObject.transform.localScale;
-            gameObject.GetComponent<Rigidbody2D>().velocity += new Vector2(0, 0.5f);
+            if (gameObject.GetComponent<Rigidbody2D>().velocity.y <= 17f && first)
+            {
+                Log(gameObject.GetComponent<Rigidbody2D>().velocity.y);
+                gameObject.GetComponent<Rigidbody2D>().velocity += new Vector2(0, 0.5f);
+            }
+            else if (first)
+            {
+                first = false;
+                gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(gameObject.GetComponent<Rigidbody2D>().velocity.x, 0f);
+            }
+            if (!first)
+            {
+                gameObject.GetComponent<Rigidbody2D>().velocity += new Vector2(0, -1 * 0.5f);
+            }
             if (gameObject.transform.GetPositionX() > 40f || gameObject.transform.GetPositionX() < 12f)
             {
                 Destroy(gameObject);

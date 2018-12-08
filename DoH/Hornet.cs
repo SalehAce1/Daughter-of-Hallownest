@@ -92,6 +92,13 @@ namespace DoH
         {
             if (secondPhase)
             {
+                _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
+                _control.ChangeTransition("Move Choice B", "SPHERE A", "Set ADash");
+                _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+
+                _control.ChangeTransition("G Sphere?", "SPHERE G", "Move Choice B");
+                _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+
                 if (gameObject.transform.localPosition.x < 0)//&& !dang)
                 {
                     for (int i = 0; i < beamR.Length; i++)
@@ -130,13 +137,23 @@ namespace DoH
                         yield return new WaitForSeconds(0.01f);
                     }
                 }
+                yield return new WaitForSeconds(1f);
+
+                _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
+                _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
+                _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+
+                _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
+                _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
             }
 
         }
         bool trick;
         IEnumerator tricky()
         {
+            _control.ChangeTransition("In Air", "AIRDASH", "In Air");
             yield return new WaitForSeconds(3f);
+            _control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
             trick = false;
         }
 
@@ -227,13 +244,21 @@ namespace DoH
                 _focusReal = Instantiate(HornetFinder._focus);
                 _focusReal.SetActive(true);
                 _focusReal.transform.SetPosition2D(randX, randY);
-                _focusReal.AddComponent<FocusCounter>();
+                
                 yield return new WaitForSeconds(0.5f);
             }
         }
 
+
         IEnumerator orbThrow()
         {
+            _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
+            _control.ChangeTransition("Move Choice B", "SPHERE A", "Set ADash");
+            _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+
+            _control.ChangeTransition("G Sphere?", "SPHERE G", "Move Choice B");
+            _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+
             for (int i = 0; i < 5; i++)
             {
                 _orbReal = Instantiate(HornetFinder._orb);
@@ -252,11 +277,20 @@ namespace DoH
                 _orbReal.AddComponent<OrbThrow>();
                 yield return 5;
             }
+
+            yield return new WaitForSeconds(1f);
+
+            _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
+            _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
+            _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+
+            _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
+            _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
         }
        
         IEnumerator DestroyBeeBrain()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 _beeReal = Instantiate(HornetFinder._bee);
                 _beeReal.SetActive(true);
@@ -266,7 +300,7 @@ namespace DoH
                 dungo.ChangeTransition("Swarm", "SPELL", "Swarm");
                 yield return null;
                 Destroy(_beeReal.LocateMyFSM("Control"));
-                _beeReal.transform.SetPosition2D(14f + i * 5f, 40f);
+                _beeReal.transform.SetPosition2D(14f + i * 8f, 40f);
                 _beeReal.AddComponent<BeeControl>();
             }
         }
@@ -386,7 +420,11 @@ namespace DoH
                 }
                 else
                 {
+                    //This might cause problems in the future
+                    _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
                     go.SetActive(false);
+                    yield return new WaitForSeconds(1f);
+                    _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
             }
             IEnumerator ActivateSphereG()
@@ -404,7 +442,11 @@ namespace DoH
                 }
                 else
                 {
+                    //This might cause problems in the future
+                    _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
                     go2.SetActive(false);
+                    yield return new WaitForSeconds(1f);
+                    _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
             }
             _control.CopyState("Sphere Recover", "Sphere Recover Old");
@@ -466,27 +508,6 @@ namespace DoH
             _control.ChangeTransition("Barb Throw", "FINISHED", "Can Throw?");
             _control.GetAction<Wait>("Barb Throw", 2).time = 0.4f;
 
-
-            /*Log("Added health recovery with Weavers.");
-            try
-            {
-                weaver = Instantiate(DoH.weaverPref);
-                weaver.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
-                var warpDelete = weaver.LocateMyFSM("Warp To Hero");
-                _weaverControl = weaver.LocateMyFSM("Control");
-                warpDelete.ChangeTransition("Check", "WARP", "Idle");
-                weaver.AddComponent<HealthManager>().hp = 1;
-                weaver.AddComponent<DamageEnemies>().damageDealt = 0;
-                weaver.AddComponent<DamageHero>();
-                //BoxCollider2D bc1 = weaver.AddComponent<BoxCollider2D>(); //Add a boxcollider2d
-                weaver.AddComponent<WeaverScript>();
-                weaver.SetActive(false);
-            }
-            catch(System.Exception e)
-            {
-                Log(e);
-            }*/
-
             //Stops the dumb freeze effect when the counter occurs
             _control.RemoveAction("CA Antic", 1);
 
@@ -509,16 +530,20 @@ namespace DoH
 
             //For Phase 1
             Log("Add Weaver Boios");
-            //_control.InsertMethod("Sphere", 0, createWeaver);
-           // _control.InsertMethod("Sphere A", 0, createWeaver);
-            
+            try
+            {
+                Log("remove");
+                _control.GetAction<ActivateGameObject>("Throw", 5).activate = false;
+            }
+            catch(System.Exception e)
+            {
+                Log(e);
+            }
             _control.InsertCoroutine("Throw", 0, needleSpread);
-
             Log("fin.");
             
         }
         
-
         GameObject _orbReal;
         GameObject _focusReal;
         GameObject _beeReal;
@@ -560,6 +585,15 @@ namespace DoH
                         _control.InsertCoroutine("Throw", 0, orbThrow);
 
                         _control.InsertCoroutine("CA Recover", 0, FireBatThrow);
+                        _control.AddAction("CA Antic", new FaceObject
+                        {
+                            objectA = gameObject,
+                            objectB = HeroController.instance.gameObject,
+                            spriteFacesRight = false,
+                            playNewAnimation = false,
+                            resetFrame = false,
+                            everyFrame = false
+                        });
 
                         _control.InsertCoroutine("G Dash", 1, FireDash);
 
@@ -592,7 +626,6 @@ namespace DoH
                     }
                     else
                     {
-                        Log(timeFocusing);
                         timeFocusing -= Time.deltaTime;
                     }
                 }
@@ -698,6 +731,12 @@ namespace DoH
                     Destroy(wave);
                     textExample.text = "Queens of Hallownest, give me strength";
                     finalPhase = true;
+                    _control.GetAction<WaitRandom>("Idle", 9).timeMax = 0.35f;
+                    _control.GetAction<WaitRandom>("Idle", 9).timeMin = 0.35f;
+                    _control.GetAction<Tk2dPlayAnimation>("Idle", 4).clipName = "Stun";
+                    _control.RemoveAction("Idle", 8);
+                    _control.RemoveAction("Idle", 7);
+                    _control.SetState("In Air");
                     StartCoroutine(tricky());
                 }
             }

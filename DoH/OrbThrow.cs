@@ -19,8 +19,8 @@ namespace DoH
         float time = 3f;
         Vector2 oldDirect;
         public GameObject target = HeroController.instance.gameObject;
-        public float angle = 200f;
-        public float speed = 14f;
+        public float angle = 170f;
+        public float speed = 13f;
         bool first;
 
         void OnTriggerEnter2D(Collider2D col)
@@ -56,7 +56,7 @@ namespace DoH
             if (time <= 2.5f)
             {
                 LookTowards(angle * Time.deltaTime);
-                speed += 0.1f;
+                //speed += 0.1f;
                 gameObject.transform.position += (gameObject.transform.right * speed * Time.deltaTime);
             }
             time -= Time.deltaTime;
