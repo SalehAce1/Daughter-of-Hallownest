@@ -56,7 +56,7 @@ namespace DoH
             if (time <= 2.5f)
             {
                 LookTowards(angle * Time.deltaTime);
-                //speed += 0.1f;
+                speed += 0.1f;
                 gameObject.transform.position += (gameObject.transform.right * speed * Time.deltaTime);
             }
             time -= Time.deltaTime;

@@ -151,9 +151,12 @@ namespace DoH
         bool trick;
         IEnumerator tricky()
         {
-            _control.ChangeTransition("In Air", "AIRDASH", "In Air");
+            //_control.ChangeTransition("In Air", "AIRDASH", "In Air");
             yield return new WaitForSeconds(3f);
-            _control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
+            //_control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
+            _control.GetAction<WaitRandom>("Idle", 7).timeMax = 0.3f;
+            _control.GetAction<WaitRandom>("Idle", 7).timeMin = 0.3f;
+            _control.GetAction<Tk2dPlayAnimation>("Idle", 4).clipName = "Idle";
             trick = false;
         }
 
@@ -458,7 +461,7 @@ namespace DoH
 
             //Make Hornet Dash after needle throw
             var removeNeedle = _control.GetAction<ActivateGameObject>("Throw Recover", 0);
-            _control.InsertAction("Throw Antic", removeNeedle, 0);
+           // _control.InsertAction("Throw Antic", removeNeedle, 0);
             removeNeedle.gameObject.GameObject.Value.LocateMyFSM("Control").ChangeTransition("Out", "FINISHED", "Notify");
             _control.CopyState("Jump", "Jump2");
             _control.CopyState("ADash Antic", "ADash Antic 2");
@@ -483,9 +486,13 @@ namespace DoH
 
             Log("Remove Evade when hit because it's dumb and also makes it so when hit hornet has a higher chance of either attacking or jumping");
             _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[0] = 0f;
-            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[1] = 0.4f;
-            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[2] = 0.5f;
-            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[3] = 0.1f;
+            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[1] = 0.5f;
+            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[2] = 0f;
+            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[3] = 0.5f;
+            _control.ChangeTransition("Dmg Response", "JUMP", "Jump Antic");
+            _control.ChangeTransition("Dmg Response", "Counter", "CA Antic");
+            _control.RemoveAction("Set Jump Only", 1);
+            _control.RemoveAction("Set Jump Only", 0);
 
 
             Log("When she gets hit she does not only jump");
@@ -533,7 +540,8 @@ namespace DoH
             try
             {
                 Log("remove");
-                _control.GetAction<ActivateGameObject>("Throw", 5).activate = false;
+                
+                
             }
             catch(System.Exception e)
             {
@@ -543,6 +551,7 @@ namespace DoH
             Log("fin.");
             
         }
+        
         
         GameObject _orbReal;
         GameObject _focusReal;
@@ -566,14 +575,11 @@ namespace DoH
 
         private void Update()
         {
-            
-
             if (finalPhase)
             {
                 if (trick)
                 {
-                    gameObject.transform.SetPosition2D(28, 38);
-                    HeroController.instance.transform.SetPosition2D(20, 29);
+                    HeroController.instance.transform.SetPosition2D(20f, 28.4f);
                 }
                 else
                 {
@@ -608,7 +614,7 @@ namespace DoH
                             resetFrame = lookAtKnight.resetFrame,
                             everyFrame = lookAtKnight.everyFrame
                         }, 0);
-                        _control.ChangeTransition("G Dash", "FINISHED", "CA Antic");
+                        _control.ChangeTransition("GDash Recover2", "FINISHED", "CA Antic");
                         firstFinal = false;
                     }
                     if (timeFocusing <= 0f)
@@ -647,6 +653,7 @@ namespace DoH
             {
                 if (!secondPhase)
                 {
+                    _control.ChangeTransition("Throw", "FINISHED", "Throw Recover");
                     firstPhase = false;
                     _control.ChangeTransition("Barb?", "BARB", "Can Throw?");
                     wave = Instantiate(DoH.wavePref);
@@ -656,7 +663,7 @@ namespace DoH
                     _control.InsertMethod("CA Recover", 0, grubberAttack);
                     _control.ChangeTransition("Move Choice B", "G DASH", "CA Antic");
 
-                    _control.InsertCoroutine("Jump2", 0, grubberAttack2);
+                    _control.InsertCoroutine("Throw", 0, grubberAttack2);
                     IEnumerator GrubFill()
                     {
                         if (secondPhase)
@@ -731,12 +738,18 @@ namespace DoH
                     Destroy(wave);
                     textExample.text = "Queens of Hallownest, give me strength";
                     finalPhase = true;
-                    _control.GetAction<WaitRandom>("Idle", 9).timeMax = 0.35f;
-                    _control.GetAction<WaitRandom>("Idle", 9).timeMin = 0.35f;
+                   
+                    _control.GetAction<WaitRandom>("Idle", 9).timeMax = 3f;
+                    _control.GetAction<WaitRandom>("Idle", 9).timeMin = 3f;
                     _control.GetAction<Tk2dPlayAnimation>("Idle", 4).clipName = "Stun";
                     _control.RemoveAction("Idle", 8);
                     _control.RemoveAction("Idle", 7);
-                    _control.SetState("In Air");
+                    _control.SetState("Idle");
+                    gameObject.transform.SetPosition2D(29f, 28.6f);
+                    if (gameObject.transform.localScale.x > 0)
+                    {
+                        gameObject.transform.localScale = new Vector3(-1f * gameObject.transform.localScale.x, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
+                    }
                     StartCoroutine(tricky());
                 }
             }

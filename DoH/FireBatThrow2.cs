@@ -18,22 +18,17 @@ namespace DoH
     {
         void Start()
         {
-            try
+
+            gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(Hornet.batDirec * 20f, 0f);
+            if (Hornet.batDirec > 0)
             {
-                gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(Hornet.batDirec * 20f, 0f);
-                if (Hornet.batDirec > 0)
-                {
-                    gameObject.transform.rotation = Quaternion.Euler(0, 180f, 0);
-                }
-                else
-                {
-                    gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
-                }
+                gameObject.transform.rotation = Quaternion.Euler(0, 180f, 0);
             }
-            catch (System.Exception e)
+            else
             {
-                Log(e);
+                gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
+
         }
 
         bool first = true;
@@ -42,7 +37,6 @@ namespace DoH
             //_batReal.transform.localScale = gameObject.transform.localScale;
             if (gameObject.GetComponent<Rigidbody2D>().velocity.y <= 17f && first)
             {
-                Log(gameObject.GetComponent<Rigidbody2D>().velocity.y);
                 gameObject.GetComponent<Rigidbody2D>().velocity += new Vector2(0, 0.5f);
             }
             else if (first)

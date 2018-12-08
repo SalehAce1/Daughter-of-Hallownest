@@ -35,6 +35,8 @@ namespace DoH
         {
             //GameCameras.instance.cameraFadeFSM.Fsm.Event("FADE INSTANT");
             Logger.Log("Wait2");
+            //GameCameras.instance.cameraFadeFSM.Fsm.Event("FADE INSTANT");
+            //yield return null;
             GameManager.instance.LoadScene("GG_Mantis_Lords");
             yield return null;
             Resources.LoadAll<GameObject>("");
@@ -110,7 +112,7 @@ namespace DoH
             Resources.LoadAll<GameObject>("");
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
-                Logger.Log("BEEE " + i.name);
+                
                 if (i.name == "Bee Dropper (1)")
                 {
                     _bee = Instantiate(i);
@@ -176,6 +178,8 @@ namespace DoH
                 _bat.SetActive(false);
                 Modding.Logger.Log("Wow I actually found it 5?");
             }
+            //yield return null;
+            //GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             /*if (_dashFire == null)
             {
                 Modding.Logger.Log("Not found.");
