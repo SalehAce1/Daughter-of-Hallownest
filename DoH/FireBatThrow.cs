@@ -36,7 +36,7 @@ namespace DoH
             }
         }
 
-        void Update()
+        void FixedUpdate()
         {
             //_batReal.transform.localScale = gameObject.transform.localScale;
             

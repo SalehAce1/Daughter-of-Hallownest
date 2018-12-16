@@ -20,6 +20,8 @@ namespace DoH
 
         internal bool IsInHall => _lastScene == "GG_Workshop";
 
+        public static readonly IList<Sprite> SPRITES = new List<Sprite>();
+
         public static GameObject weaverPref;
         public static GameObject grubRPref;
         public static GameObject grubLPref;
@@ -72,7 +74,43 @@ namespace DoH
                 //grimm_flame_particle: fire particle
                 //lava_particles_03: 4 red dots stuck together
             }
+            PVSound.LoadAssets.LoadOrbSound();
 
+            //LoadGlobalSettings();
+
+            foreach (string res in asm.GetManifestResourceNames())
+            {
+                if (!res.EndsWith(".png"))
+                {
+                    Log("Unknown resource: " + res);
+
+                    continue;
+                }
+
+               /* bool pureFile = res.StartsWith("LostLord.pure") || res.StartsWith("LostLord.z");
+
+                if (GlobalSettings.Pure ? !pureFile : pureFile)
+                    continue;*/
+
+                using (Stream s = asm.GetManifestResourceStream(res))
+                {
+                    if (s == null) continue;
+
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    s.Dispose();
+
+                    // Create texture from bytes
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(buffer);
+                    
+
+                    // Create sprite from texture
+                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
+
+                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                }
+            }
         }
 
         private void LastScene(Scene arg0, Scene arg1) => _lastScene = arg0.name;

@@ -25,7 +25,7 @@ namespace DoH
 
         void OnTriggerEnter2D(Collider2D col)
         {
-            Log(col.name);
+           
             if (col.name == "Floor Saver" || col.name == "Roof Collider" || col.name == "Terrain Saver")
             {
                 Destroy(gameObject);
@@ -44,7 +44,7 @@ namespace DoH
             time = 3f;
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (!first && time <= 2.5f)
             {

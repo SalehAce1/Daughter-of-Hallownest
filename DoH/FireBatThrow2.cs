@@ -32,10 +32,10 @@ namespace DoH
         }
 
         bool first = true;
-        void Update()
+        void FixedUpdate()
         {
             //_batReal.transform.localScale = gameObject.transform.localScale;
-            if (gameObject.GetComponent<Rigidbody2D>().velocity.y <= 17f && first)
+            if (gameObject.GetComponent<Rigidbody2D>().velocity.y <= 16.2f && first)
             {
                 gameObject.GetComponent<Rigidbody2D>().velocity += new Vector2(0, 0.5f);
             }

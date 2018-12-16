@@ -57,6 +57,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
@@ -81,14 +84,21 @@
     <Compile Include="FireBatThrow2.cs" />
     <Compile Include="FocusCounter.cs" />
     <Compile Include="FsmUtil.cs" />
-    <Compile Include="GoInCircle.cs" />
     <Compile Include="Hornet.cs" />
     <Compile Include="HornetFinder.cs" />
     <Compile Include="MantisThrow.cs" />
     <Compile Include="OrbThrow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WeaverScript.cs" />
     <Compile Include="DashDeathG.cs" />
+    <Compile Include="PVSound.cs" />
+    <Compile Include="WavUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\yes.wav" />
+    <EmbeddedResource Include="assets\1.png" />
+    <EmbeddedResource Include="assets\2.png" />
+    <EmbeddedResource Include="assets\3.png" />
+    <EmbeddedResource Include="assets\4.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

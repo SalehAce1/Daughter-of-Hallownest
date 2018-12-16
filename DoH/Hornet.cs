@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Logger = Modding.Logger;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
+using System.IO;
 
 namespace DoH
 {
@@ -29,15 +30,9 @@ namespace DoH
         private Recoil _recoil;
         private PlayMakerFSM _stunControl;
         private PlayMakerFSM _control;
-        private PlayMakerFSM _needleControl;
-        private PlayMakerFSM _needleControl2;
-        private PlayMakerFSM _weaverControl;
         private PlayMakerFSM _beamControlR;
         private PlayMakerFSM _beamControlL;
-        private GameObject needle;
-        private GameObject needle2;
         private GameObject canvas;
-        private GameObject weaver;
         private GameObject[] needles = new GameObject[10];
 
         private Text textExample;
@@ -46,17 +41,12 @@ namespace DoH
         private GameObject grubL;
         private GameObject[] grubAll = new GameObject[10];
         private GameObject wave;
-        private GameObject greatSlash;
-
+        private GameObject go1;
+        private GameObject go2;
 
         float timeLeft;
-        float heightNeedle1;
-        float heightNeedle2;
-        float needleVelocity;
         float height;
-        float timer = 3f;
         bool dang;
-        float angle = 0;
         private bool finalPhase = false;
         private bool secondPhase = false;
         private bool firstPhase = true;
@@ -154,10 +144,12 @@ namespace DoH
             //_control.ChangeTransition("In Air", "AIRDASH", "In Air");
             yield return new WaitForSeconds(3f);
             //_control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
-            _control.GetAction<WaitRandom>("Idle", 7).timeMax = 0.3f;
-            _control.GetAction<WaitRandom>("Idle", 7).timeMin = 0.3f;
+            _control.GetAction<WaitRandom>("Idle", 7).timeMax = 0.2f;
+            _control.GetAction<WaitRandom>("Idle", 7).timeMin = 0.2f;
             _control.GetAction<Tk2dPlayAnimation>("Idle", 4).clipName = "Idle";
+            _control.SetState("CA Antic");
             trick = false;
+            HeroController.instance.takeNoDamage = false;
         }
 
         IEnumerator needleSpread()
@@ -195,7 +187,8 @@ namespace DoH
         {
             allParticles = new List<GameObject>();
             int i = 0;
-            while (_anim.CurrentClip.name == "G Dash")
+            float timer = 0.5f;
+            while (_anim.CurrentClip.name == "G Dash" && timer >= 0)
             {
                 try
                 {
@@ -214,6 +207,7 @@ namespace DoH
                 {
                     Log(e);
                 }
+                timer -= Time.fixedDeltaTime;
                 yield return null;
             }
         }
@@ -237,6 +231,13 @@ namespace DoH
 
             }
         }
+        bool test = false;
+        GameObject testgo;
+        RenderTexture testing;
+        Texture2D test2d;
+
+
+    
 
         IEnumerator randFocus()
         {
@@ -248,10 +249,99 @@ namespace DoH
                 _focusReal.SetActive(true);
                 _focusReal.transform.SetPosition2D(randX, randY);
                 
+                HeroController.instance.spellControl.gameObject.GetComponent<AudioSource>().PlayOneShot(PVSound.LoadAssets.orbSound);
+
+                try
+                {
+                    // _focusReal.GetComponentsInChildren<ParticleSystemRenderer>()[0].
+                    for (int j = 0; j < _focusReal.GetComponentsInChildren<SpriteRenderer>(true).Length-1; j++) //length-1
+                    {
+                        
+                        //Log(_focusReal.GetComponentsInChildren<SpriteRenderer>()[j].name);
+                        _focusReal.GetComponentsInChildren<SpriteRenderer>()[j].sprite = DoH.SPRITES[j];
+                        /*var a = _focusReal.GetComponentsInChildren<SpriteRenderer>(true)[j].sprite.texture;
+                        Log("1");
+                        RenderTexture tmp = RenderTexture.GetTemporary(
+                            a.width,
+                            a.height,
+                            0,
+                            RenderTextureFormat.Default,
+                            RenderTextureReadWrite.Linear
+                            );
+                        Log("2");
+                        Graphics.Blit(a, tmp);
+                        Log(tmp == null);
+                        DumpRenderTexture(tmp, "C:/Users/ghaem/Desktop/SavedScreen" + j + ".png");*/
+
+                        // C:/Users/egsha/SavedScreen.png
+                    }
+                    for (int j = 0; j < _focusReal.GetComponentsInChildren<ParticleSystem>(true).Length; j++)
+                    {
+                        ParticleSystem.MainModule settings = _focusReal.GetComponentsInChildren<ParticleSystem>(true)[j].main;
+                        Log("2 " + _focusReal.GetComponentsInChildren<ParticleSystem>(true)[j].name);
+                        settings.startColor = new ParticleSystem.MinMaxGradient(Color.red);
+                        Log("3");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Log(e);
+                }
+
+
                 yield return new WaitForSeconds(0.5f);
+               
             }
         }
 
+
+
+        public void SaveTexture()
+        {
+            
+        }
+
+        public void DumpRenderTexture(RenderTexture rt, string pngOutPath)
+        {
+            var oldRT = RenderTexture.active;
+            Log("3");
+            var tex = new Texture2D(rt.width, rt.height);
+            Log("4");
+            RenderTexture.active = rt;
+            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+            tex.Apply();
+            Log("5");
+            File.WriteAllBytes(pngOutPath, tex.EncodeToPNG());
+            RenderTexture.active = oldRT;
+            Log("6");
+        }
+
+
+
+
+
+
+
+
+        void Update()
+        {
+            /* if (testgo != null)
+             {
+                 Log("test");
+                 try
+                 {
+                     Log("getting names " + testgo.GetComponentsInChildren<SpriteRenderer>().Length);
+                 }
+                 catch (System.Exception e)
+                 {
+                     Log(e);
+                 }
+             }
+             else
+             {
+                 Log("oof");
+             }*/
+        }
 
         IEnumerator orbThrow()
         {
@@ -303,7 +393,7 @@ namespace DoH
                 dungo.ChangeTransition("Swarm", "SPELL", "Swarm");
                 yield return null;
                 Destroy(_beeReal.LocateMyFSM("Control"));
-                _beeReal.transform.SetPosition2D(14f + i * 8f, 40f);
+                _beeReal.transform.SetPosition2D(17f + i * 8f, 40f);
                 _beeReal.AddComponent<BeeControl>();
             }
         }
@@ -346,6 +436,7 @@ namespace DoH
             _batReal2.AddComponent<FireBatThrow2>();
         }
 
+        PlayMakerFSM _sceneFSM;
         private void Awake()
         {
             Log("Added Hornet Mono");
@@ -388,12 +479,17 @@ namespace DoH
                 {
                     _anim.GetClipByName(i.Key).fps = i.Value;
                 }
+
+                Log("attempt at music was made");
+                //_sceneFSM.ChangeTransition("Statue Level", "1", "Boss Statue Alt");
+                Log("attempt at music was made2");
+                //_sceneFSM.RemoveAction("Boss Statue Alt", 0);
+                
             }
             catch(System.Exception e)
             {
                 Log(e);
             }
-            
 
             // Stop pointless standing in place
             _control.GetAction<WaitRandom>("Idle", 9).timeMax = 0f;
@@ -404,31 +500,55 @@ namespace DoH
             _control.GetAction<WaitRandom>("Run", 6).timeMin = 0f;
 
             //Make Hornet hold her sphere for 5 seconds
-            var go = _control.GetAction<ActivateGameObject>("Sphere Recover A", 1).gameObject.GameObject.Value;
-            var go2 = _control.GetAction<ActivateGameObject>("Sphere Recover", 1).gameObject.GameObject.Value;
+            go1 = _control.GetAction<ActivateGameObject>("Sphere Recover A", 1).gameObject.GameObject.Value;
+            go2 = _control.GetAction<ActivateGameObject>("Sphere Recover", 1).gameObject.GameObject.Value;
             IEnumerator ActivateSphereA()
             {
+                _control.ChangeTransition("In Air", "AIRDASH", "Land");
                 if (firstPhase)
                 {
                     Log("Hornet: Activate Air turbo sphere mode, DIE little Ghost.");
-                    go.SetActive(true);
-                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
-                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set ADash");
+                    go1.SetActive(true);
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "GDash Antic");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "CA Antic");
                     _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
                     yield return new WaitForSeconds(3f);
-                    go.SetActive(false);
+                    go1.SetActive(false); 
                     _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
                     _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
-                else
+                else if (secondPhase)
                 {
                     //This might cause problems in the future
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set ADash");
                     _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
-                    go.SetActive(false);
+                    go1.SetActive(false);
                     yield return new WaitForSeconds(1f);
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
                 }
+                else if (finalPhase)
+                {
+                    //This might cause problems in the future
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set ADash");
+                    _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMax = 1.2f;
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMin = 1.2f;
+                    go1.SetActive(false);
+                    yield return new WaitForSeconds(1.2f);
+                    _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMax = 0.2f;
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMin = 0.2f;
+                }
+                _control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
+                yield return new WaitForSeconds(1f);
+                canSphere = false;
             }
             IEnumerator ActivateSphereG()
             {
@@ -443,12 +563,30 @@ namespace DoH
                     _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
-                else
+                else if (secondPhase)
                 {
                     //This might cause problems in the future
                     _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+                    _control.ChangeTransition("G Sphere?", "SPHERE G", "Move Choice B");
                     go2.SetActive(false);
                     yield return new WaitForSeconds(1f);
+                    _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
+                    _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+                }
+                else if (finalPhase)
+                {
+                    //This might cause problems in the future
+                    _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+                    _control.ChangeTransition("G Sphere?", "SPHERE G", "Move Choice B");
+                    go2.SetActive(false);
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMax = 1.2f;
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMin = 1.2f;
+                    
+                    yield return new WaitForSeconds(1.2f);
+
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMax = 0.2f;
+                    _control.GetAction<WaitRandom>("Idle", 7).timeMin = 0.2f;
+                    _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
             }
@@ -461,6 +599,15 @@ namespace DoH
 
             //Make Hornet Dash after needle throw
             var removeNeedle = _control.GetAction<ActivateGameObject>("Throw Recover", 0);
+            try
+            {
+                Log("is throw working?");
+                _control.GetAction<SetVelocityAsAngle>("Throw", 7).speed = 30f;
+            }
+            catch(System.Exception e)
+            {
+                Log(e);
+            }
            // _control.InsertAction("Throw Antic", removeNeedle, 0);
             removeNeedle.gameObject.GameObject.Value.LocateMyFSM("Control").ChangeTransition("Out", "FINISHED", "Notify");
             _control.CopyState("Jump", "Jump2");
@@ -494,9 +641,6 @@ namespace DoH
             _control.RemoveAction("Set Jump Only", 1);
             _control.RemoveAction("Set Jump Only", 0);
 
-
-            Log("When she gets hit she does not only jump");
-            _control.ChangeTransition("Dmg Response", "JUMP", "Jump Antic");
 
             Log("Skip waiting for player to hit her counter and never do the dumb evade move");
             _control.GetAction<Wait>("Counter Stance", 1).time = 0f;
@@ -534,24 +678,38 @@ namespace DoH
                 needles[i].SetActive(false);
             }
             
+            _control.InsertCoroutine("Throw", 0, needleSpread);
 
-            //For Phase 1
-            Log("Add Weaver Boios");
+            Log("fin.");
             try
             {
-                Log("remove");
-                
-                
+                var ball = _control.GetAction<ActivateGameObject>("Sphere A",0).gameObject.GameObject.Value;
+                Log("2");
+                var ballfsm = ball.LocateMyFSM("Grow");
+                Log("3");
+                ballfsm.RemoveAction("Grow",0);
             }
             catch(System.Exception e)
             {
                 Log(e);
             }
-            _control.InsertCoroutine("Throw", 0, needleSpread);
-            Log("fin.");
             
         }
         
+        IEnumerator SphereCheck()
+        {
+            while (true)
+            {
+               
+                if (gameObject.transform.GetPositionY() < 33.8f)
+                {
+                   
+                    _control.SetState("Sphere Antic A");
+                    break;
+                }
+                yield return null;
+            }
+        }
         
         GameObject _orbReal;
         GameObject _focusReal;
@@ -566,25 +724,90 @@ namespace DoH
         public static int focusAmount = 0;
         public static int gndOrAir;
         public static float HornetDirect;
-        float timeFocusing = 10f;
+        float timeFocusing = 10f;  
         bool isDashing = false;
         bool firstFinal = true;
+
+        //make orb spawn when air dash
+        int num = 0;
+        bool canSphere;
+        float canStart = 2f;
         
-
-       
-
-        private void Update()
+        private void FixedUpdate()
         {
+            if (canStart > 0)
+            {
+                canStart -= Time.fixedDeltaTime;
+            }
+            else if (canStart > -10f)
+            {
+                canStart = -999f;
+                _control.RemoveAction("In Air", 0);
+                _control.RemoveAction("In Air", 0);
+                _control.GetAction<Wait>("In Air", 2).time = 0.2f;
+                _control.ChangeTransition("Do Sphere?", "CANCEL", "ADash Antic");
+                _control.RemoveAction("Do Sphere?", 0);
+                //_control.RemoveAction("Do Sphere?", 0);
+                try
+                {
+                    _control.GetAction<BoolTest>("Do Sphere?", 0).isTrue = null;
+                    _control.InsertCoroutine("Do Sphere?", 1, SphereCheck);
+                }
+                catch (System.Exception e)
+                {
+                    Log(e);
+                }
+            }
+            else if (canStart == -999f)
+            {
+                if (_control.ActiveStateName == "In Air" && !canSphere)
+                {
+                    num++;
+                    // Log("Dont Sphere");
+                }
+                if (num > 60)
+                {
+                    canSphere = true;
+                    //Log("can sphere");
+                    num = 0;
+                    _control.ChangeTransition("In Air", "AIRDASH", "Do Sphere?");
+                }
+            }
+
             if (finalPhase)
             {
+                HeroController.instance.ClearMP();
                 if (trick)
                 {
+                    gameObject.transform.SetPosition2D(29f, 28.6f);
                     HeroController.instance.transform.SetPosition2D(20f, 28.4f);
                 }
                 else
                 {
                     if (firstFinal)
                     {
+                        textExample.text = "Stop those worthless spells ghost";
+                        _control.ChangeTransition("Throw", "FINISHED", "Throw Recover");
+                        //_control.RemoveAction("Throw Recover", 3);
+                        _control.ChangeTransition("Throw Recover", "FINISHED", "Jump");
+                        try
+                        {
+                            // _control.GetAction<Wait>("Sphere A", 5).time = 1f;
+                            // _control.GetAction<Wait>("Sphere", 5).time = 1f;
+                            _control.GetAction<FireAtTarget>("Fire", 2).speed = 42f;
+                            _control.GetAction<SetVelocityAsAngle>("Fire", 3).speed = 42f;
+                            _control.GetAction<SetVelocity2d>("G Dash", 5).x = 32f;
+                        }
+                        catch(System.Exception e)
+                        {
+                            Log(e);
+                        }
+                        _anim.GetClipByName("Sphere Antic A Q").fps = 14;
+                        _anim.GetClipByName("Wall Impact").fps = 35;
+                        _anim.GetClipByName("A Dash Antic Q").fps = 37;
+                        _anim.GetClipByName("G Dash Antic Q").fps = 37;
+                        
+
                         _control.InsertMethod("Sphere", 0, SetMantisThrow);
                         _control.InsertMethod("Sphere A", 0, SetMantisThrow);
 
@@ -601,8 +824,18 @@ namespace DoH
                             everyFrame = false
                         });
 
-                        _control.InsertCoroutine("G Dash", 1, FireDash);
+                        try
+                        {
+                            _control.GetAction<Wait>("G Dash", 9).time = 0.5f;
+                           // _control.GetAction<DecelerateXY>("GDash Recover1", 3).decelerationX = 0.0f;
+                            //_control.GetAction<DecelerateXY>("GDash Recover2", 2).decelerationX = 0.0f;
+                        }
+                        catch(System.Exception e)
+                        {
+                            Log(e);
+                        }
 
+                        _control.InsertCoroutine("G Dash", 1, FireDash);
                         var lookAtKnight = _control.GetAction<FaceObject>("GDash Antic", 2);
                         _control.InsertAction("G Dash", new FaceObject
                         {
@@ -615,12 +848,13 @@ namespace DoH
                             everyFrame = lookAtKnight.everyFrame
                         }, 0);
                         _control.ChangeTransition("GDash Recover2", "FINISHED", "CA Antic");
+                        
                         firstFinal = false;
                     }
                     if (timeFocusing <= 0f)
                     {
                         var rand = Random.Range(0, 2);
-                        timeFocusing = 15f;
+                        timeFocusing = 12f; 
                         if (rand == 0)
                         {
                             StartCoroutine(randFocus());
@@ -632,7 +866,7 @@ namespace DoH
                     }
                     else
                     {
-                        timeFocusing -= Time.deltaTime;
+                        timeFocusing -= Time.fixedDeltaTime;
                     }
                 }
             }
@@ -653,7 +887,24 @@ namespace DoH
             {
                 if (!secondPhase)
                 {
-                    _control.ChangeTransition("Throw", "FINISHED", "Throw Recover");
+                    try
+                    {
+                        // _control.GetAction<Wait>("Sphere A", 5).time = 1f;
+                        // _control.GetAction<Wait>("Sphere", 5).time = 1f;
+                        _control.GetAction<FireAtTarget>("Fire", 2).speed = 35f;
+                        _control.GetAction<SetVelocityAsAngle>("Fire", 3).speed = 35f;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log(e);
+                    }
+                    _anim.GetClipByName("Wall Impact").fps = 25;
+                    _anim.GetClipByName("A Dash Antic Q").fps = 30;
+
+                    _control.GetAction<SetPosition>("Throw", 5).vector = new Vector3(50f, 50f, 0f);
+                    _control.RemoveAction("Throw", 5);
+                    _control.GetAction<ActivateGameObject>("Throw", 5).activate = false;
+
                     firstPhase = false;
                     _control.ChangeTransition("Barb?", "BARB", "Can Throw?");
                     wave = Instantiate(DoH.wavePref);
@@ -664,6 +915,7 @@ namespace DoH
                     _control.ChangeTransition("Move Choice B", "G DASH", "CA Antic");
 
                     _control.InsertCoroutine("Throw", 0, grubberAttack2);
+
                     IEnumerator GrubFill()
                     {
                         if (secondPhase)
@@ -671,17 +923,23 @@ namespace DoH
                             height = gameObject.transform.GetPositionY() + 5f;
                             for (int i = 0, a = 0; i < 5; i++, a += 2)
                             {
+                                if (i > 0)
+                                {
+                                    Destroy(grubAll[i - 1].LocateMyFSM("Control"));
+                                }
                                 grubAll[i] = Instantiate(DoH.grubRPref);
                                 _beamControlR = grubAll[i].LocateMyFSM("Control");
+                                //_beamControlR.RemoveAction("Init", 7);
+                                //_beamControlR.RemoveAction("Init", 9);
                                 _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
                                 _beamControlR.ChangeTransition("Active", "DEALT DAMAGE", "Active");
                                 var initFsm = _beamControlR.GetAction<SetVelocity2d>("Init", 7);
-                                _beamControlR.AddAction("Active", new SetVelocity2d
+                                _beamControlR.AddAction("Init", new SetVelocity2d
                                 {
                                     gameObject = initFsm.gameObject,
                                     vector = initFsm.vector,
-                                    x = 20,
-                                    y = -5,
+                                    x = 0f,
+                                    y = 0f,
                                     everyFrame = false
                                 });
                                 Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
@@ -689,23 +947,27 @@ namespace DoH
                                 grubAll[i].AddComponent<DamageHero>();
                                 grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
                                 grubAll[i].SetActive(true);
-                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(15f, 0);
+                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
                                 yield return null;
                             }
                             height = gameObject.transform.GetPositionY() + 5f;
                             for (int i = 5, a = 0; i < 10; i++, a += 2)
                             {
+                                if (i > 5)
+                                {
+                                    Destroy(grubAll[i-1].LocateMyFSM("Control"));
+                                }
                                 grubAll[i] = Instantiate(DoH.grubLPref);
                                 _beamControlL = grubAll[i].LocateMyFSM("Control");
                                 _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
                                 _beamControlL.ChangeTransition("Active", "DEALT DAMAGE", "Active");
                                 var initFsm = _beamControlL.GetAction<SetVelocity2d>("Init", 7);
-                                _beamControlL.AddAction("Active", new SetVelocity2d
+                                _beamControlL.AddAction("Init", new SetVelocity2d
                                 {
                                     gameObject = initFsm.gameObject,
                                     vector = initFsm.vector,
-                                    x = -20,
-                                    y = -5,
+                                    x = 0f,
+                                    y = 0f,
                                     everyFrame = false
                                 });
                                 Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
@@ -713,15 +975,24 @@ namespace DoH
                                 grubAll[i].AddComponent<DamageHero>();
                                 grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
                                 grubAll[i].SetActive(true);
-                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(15f, 0);
+                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
+                                yield return null;
+                            }
+
+                            yield return new WaitForSeconds(0.25f);
+
+                            for (int i = 0, a = 5; i < 5; i++,a++)
+                            {
+                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(20f, -5f);
+                                grubAll[a].GetComponent<Rigidbody2D>().velocity = new Vector2(-20f, -5f);
                                 yield return null;
                             }
 
                         }
                     }
 
-                    _control.InsertCoroutine("Sphere Recover", 0, GrubFill);
-                    _control.InsertCoroutine("Sphere Recover A", 0, GrubFill);
+                    _control.InsertCoroutine("Sphere", 0, GrubFill);
+                    _control.InsertCoroutine("Sphere A", 0, GrubFill);
                     textExample.text = "I can't let you win ghost.";
                     secondPhase = true;
                 }
@@ -731,24 +1002,38 @@ namespace DoH
 
             if (_hm.hp <= 800 )
             {
-                if (!finalPhase)
+                if (!finalPhase && _control.ActiveStateName != "Idle")
                 {
-                    secondPhase = false;
-                    trick = true;
-                    Destroy(wave);
-                    textExample.text = "Queens of Hallownest, give me strength";
-                    finalPhase = true;
-                   
+                    
                     _control.GetAction<WaitRandom>("Idle", 9).timeMax = 3f;
                     _control.GetAction<WaitRandom>("Idle", 9).timeMin = 3f;
                     _control.GetAction<Tk2dPlayAnimation>("Idle", 4).clipName = "Stun";
                     _control.RemoveAction("Idle", 8);
                     _control.RemoveAction("Idle", 7);
-                    _control.SetState("Idle");
+                    //_control.SetState("Idle");
+                }
+                else if (!finalPhase && _control.ActiveStateName == "Idle")
+                {
+                    HeroController.instance.takeNoDamage = true;
+                    secondPhase = false;
+                    trick = true;
+                    Destroy(wave);
+                    textExample.text = "Queens of Hallownest, give me strength";
+                    finalPhase = true;
+
                     gameObject.transform.SetPosition2D(29f, 28.6f);
                     if (gameObject.transform.localScale.x > 0)
                     {
                         gameObject.transform.localScale = new Vector3(-1f * gameObject.transform.localScale.x, gameObject.transform.localScale.y, gameObject.transform.localScale.z);
+                    }
+                    try
+                    {
+                        go1.SetActive(false);
+                        go2.SetActive(false);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log(e);
                     }
                     StartCoroutine(tricky());
                 }
@@ -774,16 +1059,6 @@ namespace DoH
         private void OnDestroy()
         {
             Destroy(canvas);
-        }
-        public void createWeaver()
-        {
-            Log("Getting weavers to spawn");
-            if (!weaver.activeSelf && firstPhase)
-            {
-                weaver.transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
-                weaver.AddComponent<DamageEnemies>().damageDealt = 0;
-                weaver.SetActive(true);
-            }
         }
         private static void Log(object obj)
         {

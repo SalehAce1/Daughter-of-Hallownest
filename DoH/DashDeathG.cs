@@ -32,7 +32,7 @@ namespace DoH
             
         }
 
-        void Update()
+        void FixedUpdate()
         {
             try
             {

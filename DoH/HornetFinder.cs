@@ -15,6 +15,7 @@ namespace DoH
         public static GameObject _bat;
         public static GameObject _dashFire;
         public static GameObject _trap;
+        
 
         private void Start()
         {

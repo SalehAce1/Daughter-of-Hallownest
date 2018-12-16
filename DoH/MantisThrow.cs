@@ -21,7 +21,7 @@ namespace DoH
         float vyG;
         float fG;
 
-        void Update()
+        void FixedUpdate()
         {
             if (!firstAct)
             {

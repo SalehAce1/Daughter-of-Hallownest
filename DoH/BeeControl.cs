@@ -24,6 +24,7 @@ namespace DoH
         float angleOffset;
         bool everyFrame;
         bool worldSpace;
+        float timeStart;
 
         void Start()
         {
@@ -35,50 +36,60 @@ namespace DoH
             angleOffset = 90f;
             everyFrame = true;
             worldSpace = true;
+
+            timeStart = 0.8f;
         }
 
-        void Update()
+        void FixedUpdate()
         {
-            if (this.rb2d == null)
+            if (timeStart <= 0)
             {
-                return;
-            }
-            Vector2 velocity = this.rb2d.velocity;
-            if (gameObject.transform.position.x < target.transform.position.x - turnRange || gameObject.transform.position.x > target.transform.position.x + turnRange)
-            {
-                if (gameObject.transform.position.x < target.transform.position.x)
+                if (this.rb2d == null)
                 {
-                    velocity.x += this.acceleration;
+                    return;
+                }
+                Vector2 velocity = this.rb2d.velocity;
+                if (gameObject.transform.position.x < target.transform.position.x - turnRange || gameObject.transform.position.x > target.transform.position.x + turnRange)
+                {
+                    if (gameObject.transform.position.x < target.transform.position.x)
+                    {
+                        velocity.x += this.acceleration;
+                    }
+                    else
+                    {
+                        velocity.x -= acceleration;
+                    }
+                    if (velocity.x > speedMax)
+                    {
+                        velocity.x = speedMax;
+                    }
+                    if (velocity.x < -speedMax)
+                    {
+                        velocity.x = -speedMax;
+                    }
+                    this.rb2d.velocity = velocity;
+                }
+                rb2d.velocity = new Vector2(rb2d.velocity.x, -13f);
+
+                Vector2 velocity2 = rb2d.velocity;
+                float z = Mathf.Atan2(velocity.y, velocity.x) * 57.2957764f + this.angleOffset;
+                if (this.worldSpace)
+                {
+                    this.gameObject.transform.eulerAngles = new Vector3(0f, 0f, z);
                 }
                 else
                 {
-                    velocity.x -= acceleration;
+                    this.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, z);
                 }
-                if (velocity.x > speedMax)
+                if (gameObject.transform.GetPositionY() < 20f)
                 {
-                    velocity.x = speedMax;
+                    Destroy(gameObject);
                 }
-                if (velocity.x < -speedMax)
-                {
-                    velocity.x = -speedMax;
-                }
-                this.rb2d.velocity = velocity;
-            }
-            rb2d.velocity = new Vector2(rb2d.velocity.x, -13f);
-
-            Vector2 velocity2 = rb2d.velocity;
-            float z = Mathf.Atan2(velocity.y, velocity.x) * 57.2957764f + this.angleOffset;
-            if (this.worldSpace)
-            {
-                this.gameObject.transform.eulerAngles = new Vector3(0f, 0f, z);
             }
             else
             {
-                this.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, z);
-            }
-            if (gameObject.transform.GetPositionY() < 20f)
-            {
-                Destroy(gameObject);
+                gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
+                timeStart -= Time.fixedDeltaTime;
             }
         }
 
