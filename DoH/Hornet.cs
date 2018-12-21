@@ -316,33 +316,6 @@ namespace DoH
             Log("6");
         }
 
-
-
-
-
-
-
-
-        void Update()
-        {
-            /* if (testgo != null)
-             {
-                 Log("test");
-                 try
-                 {
-                     Log("getting names " + testgo.GetComponentsInChildren<SpriteRenderer>().Length);
-                 }
-                 catch (System.Exception e)
-                 {
-                     Log(e);
-                 }
-             }
-             else
-             {
-                 Log("oof");
-             }*/
-        }
-
         IEnumerator orbThrow()
         {
             _control.ChangeTransition("Move Choice A", "SPHERE A", "Set ADash");
@@ -693,9 +666,35 @@ namespace DoH
             {
                 Log(e);
             }
-            
+
+            _control.InsertMethod("Fire", 0,AirDashCounter);
+            //_control.InsertMethod("Land Y", 0, ResetADash);
+            _control.InsertMethod("In Air", 0, InAirChecker); //Had to increase num by 1
+            _control.ChangeTransition("Jump R", "FINISHED", "Land");
+            _control.ChangeTransition("Jump L", "FINISHED", "Land");
         }
+
         
+
+        public void AirDashCounter()
+        {
+            //aDashC++;
+        }
+
+
+        public void InAirChecker()
+        {
+            //Log("Air D " + aDashC);
+            /*if (aDashC > 1)
+            {
+                _control.ChangeTransition("In Air", "AIRDASH", "Land");
+            }
+            else
+            {
+                _control.ChangeTransition("In Air", "AIRDASH", "ADash Antic");
+            }*/
+        }
+
         IEnumerator SphereCheck()
         {
             while (true)
@@ -718,6 +717,7 @@ namespace DoH
         GameObject _batReal;
         GameObject _batReal2;
         GameObject _dashReal;
+        public static int aDashC = 0;
         public static int orbNum = 0;
         public static int orbDirec = 1;
         public static int batDirec = 0;
@@ -732,9 +732,11 @@ namespace DoH
         int num = 0;
         bool canSphere;
         float canStart = 2f;
-        
+        bool firstFinal2 = false;
+
         private void FixedUpdate()
         {
+
             if (canStart > 0)
             {
                 canStart -= Time.fixedDeltaTime;
@@ -742,9 +744,9 @@ namespace DoH
             else if (canStart > -10f)
             {
                 canStart = -999f;
-                _control.RemoveAction("In Air", 0);
-                _control.RemoveAction("In Air", 0);
-                _control.GetAction<Wait>("In Air", 2).time = 0.2f;
+                _control.RemoveAction("In Air", 1);
+                _control.RemoveAction("In Air", 1);
+                _control.GetAction<Wait>("In Air", 3).time = 0.2f;
                 _control.ChangeTransition("Do Sphere?", "CANCEL", "ADash Antic");
                 _control.RemoveAction("Do Sphere?", 0);
                 //_control.RemoveAction("Do Sphere?", 0);
@@ -777,6 +779,25 @@ namespace DoH
             if (finalPhase)
             {
                 HeroController.instance.ClearMP();
+                if (_hm.hp <= 300 && !firstFinal2)
+                {
+                    firstFinal2 = true;
+                    textExample.text = "I pity you no more...";
+                    try
+                    {
+                        _control.GetAction<FireAtTarget>("Fire", 3).speed = 42f;
+                        _control.GetAction<SetVelocityAsAngle>("Fire", 4).speed = 42f;
+                        _control.GetAction<SetVelocity2d>("G Dash", 5).x = 30f;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log(e);
+                    }
+                    _anim.GetClipByName("Sphere Antic A Q").fps = 14;
+                    _anim.GetClipByName("Wall Impact").fps = 35;
+                    _anim.GetClipByName("A Dash Antic Q").fps = 40;
+                    _anim.GetClipByName("G Dash Antic Q").fps = 40;
+                }
                 if (trick)
                 {
                     gameObject.transform.SetPosition2D(29f, 28.6f);
@@ -794,9 +815,9 @@ namespace DoH
                         {
                             // _control.GetAction<Wait>("Sphere A", 5).time = 1f;
                             // _control.GetAction<Wait>("Sphere", 5).time = 1f;
-                            _control.GetAction<FireAtTarget>("Fire", 2).speed = 42f;
-                            _control.GetAction<SetVelocityAsAngle>("Fire", 3).speed = 42f;
-                            _control.GetAction<SetVelocity2d>("G Dash", 5).x = 32f;
+                            _control.GetAction<FireAtTarget>("Fire", 3).speed = 36f;
+                            _control.GetAction<SetVelocityAsAngle>("Fire", 4).speed = 36f;
+                            _control.GetAction<SetVelocity2d>("G Dash", 5).x = 30f;
                         }
                         catch(System.Exception e)
                         {
@@ -804,8 +825,8 @@ namespace DoH
                         }
                         _anim.GetClipByName("Sphere Antic A Q").fps = 14;
                         _anim.GetClipByName("Wall Impact").fps = 35;
-                        _anim.GetClipByName("A Dash Antic Q").fps = 37;
-                        _anim.GetClipByName("G Dash Antic Q").fps = 37;
+                        _anim.GetClipByName("A Dash Antic Q").fps = 34;
+                        _anim.GetClipByName("G Dash Antic Q").fps = 34;
                         
 
                         _control.InsertMethod("Sphere", 0, SetMantisThrow);
@@ -891,8 +912,8 @@ namespace DoH
                     {
                         // _control.GetAction<Wait>("Sphere A", 5).time = 1f;
                         // _control.GetAction<Wait>("Sphere", 5).time = 1f;
-                        _control.GetAction<FireAtTarget>("Fire", 2).speed = 35f;
-                        _control.GetAction<SetVelocityAsAngle>("Fire", 3).speed = 35f;
+                        _control.GetAction<FireAtTarget>("Fire", 3).speed = 35f;
+                        _control.GetAction<SetVelocityAsAngle>("Fire", 4).speed = 35f;
                     }
                     catch (System.Exception e)
                     {
@@ -921,74 +942,59 @@ namespace DoH
                         if (secondPhase)
                         {
                             height = gameObject.transform.GetPositionY() + 5f;
-                            for (int i = 0, a = 0; i < 5; i++, a += 2)
+                            for (int i = 0, d = 5, a = 0; i < 5; i++, d++, a += 2)
                             {
-                                if (i > 0)
+                                try
                                 {
-                                    Destroy(grubAll[i - 1].LocateMyFSM("Control"));
+                                    Log("E for everyone");
+                                    
+                                    
+                                    
+                                    grubAll[i] = Instantiate(DoH.grubRPref);
+                                    Destroy(grubAll[i].LocateMyFSM("Control"));
+
+                                    Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
+                                    grubAll[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
+                                    grubAll[i].AddComponent<DamageHero>();
+                                    grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
+                                    grubAll[i].SetActive(true);
+                                    grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
+
+
+
+                                    height = gameObject.transform.GetPositionY() + 5f;
+
+                                    
+                                    
+                                    
+                                    grubAll[d] = Instantiate(DoH.grubLPref);
+                                    Destroy(grubAll[d].LocateMyFSM("Control"));
+
+                                    Destroy(grubAll[d].LocateMyFSM("damages_enemy"));
+                                    grubAll[d].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
+                                    grubAll[d].AddComponent<DamageHero>();
+                                    grubAll[d].GetComponent<DamageHero>().damageDealt *= 2;
+                                    grubAll[d].SetActive(true);
+                                    grubAll[d].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
+                                    
                                 }
-                                grubAll[i] = Instantiate(DoH.grubRPref);
-                                _beamControlR = grubAll[i].LocateMyFSM("Control");
-                                //_beamControlR.RemoveAction("Init", 7);
-                                //_beamControlR.RemoveAction("Init", 9);
-                                _beamControlR.GetAction<Wait>("Active", 0).time = 5f;
-                                _beamControlR.ChangeTransition("Active", "DEALT DAMAGE", "Active");
-                                var initFsm = _beamControlR.GetAction<SetVelocity2d>("Init", 7);
-                                _beamControlR.AddAction("Init", new SetVelocity2d
+                                catch (System.Exception e)
                                 {
-                                    gameObject = initFsm.gameObject,
-                                    vector = initFsm.vector,
-                                    x = 0f,
-                                    y = 0f,
-                                    everyFrame = false
-                                });
-                                Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
-                                grubAll[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
-                                grubAll[i].AddComponent<DamageHero>();
-                                grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
-                                grubAll[i].SetActive(true);
-                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
-                                yield return null;
-                            }
-                            height = gameObject.transform.GetPositionY() + 5f;
-                            for (int i = 5, a = 0; i < 10; i++, a += 2)
-                            {
-                                if (i > 5)
-                                {
-                                    Destroy(grubAll[i-1].LocateMyFSM("Control"));
+                                    Log(e);
                                 }
-                                grubAll[i] = Instantiate(DoH.grubLPref);
-                                _beamControlL = grubAll[i].LocateMyFSM("Control");
-                                _beamControlL.GetAction<Wait>("Active", 0).time = 5f;
-                                _beamControlL.ChangeTransition("Active", "DEALT DAMAGE", "Active");
-                                var initFsm = _beamControlL.GetAction<SetVelocity2d>("Init", 7);
-                                _beamControlL.AddAction("Init", new SetVelocity2d
-                                {
-                                    gameObject = initFsm.gameObject,
-                                    vector = initFsm.vector,
-                                    x = 0f,
-                                    y = 0f,
-                                    everyFrame = false
-                                });
-                                Destroy(grubAll[i].LocateMyFSM("damages_enemy"));
-                                grubAll[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), height - a);
-                                grubAll[i].AddComponent<DamageHero>();
-                                grubAll[i].GetComponent<DamageHero>().damageDealt *= 2;
-                                grubAll[i].SetActive(true);
-                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 0f);
                                 yield return null;
                             }
-
-                            yield return new WaitForSeconds(0.25f);
-
-                            for (int i = 0, a = 5; i < 5; i++,a++)
-                            {
-                                grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(20f, -5f);
-                                grubAll[a].GetComponent<Rigidbody2D>().velocity = new Vector2(-20f, -5f);
-                                yield return null;
-                            }
-
+                            
                         }
+                        yield return new WaitForSeconds(0.2f);
+
+                        for (int i = 0, a = 5; i < 5; i++, a++)
+                        {
+                            grubAll[i].GetComponent<Rigidbody2D>().velocity = new Vector2(20f, -5f);
+                            grubAll[a].GetComponent<Rigidbody2D>().velocity = new Vector2(-20f, -5f);
+                            yield return null;
+                        }
+                        
                     }
 
                     _control.InsertCoroutine("Sphere", 0, GrubFill);
