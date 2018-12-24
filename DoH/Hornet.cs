@@ -253,27 +253,10 @@ namespace DoH
 
                 try
                 {
-                    // _focusReal.GetComponentsInChildren<ParticleSystemRenderer>()[0].
                     for (int j = 0; j < _focusReal.GetComponentsInChildren<SpriteRenderer>(true).Length-1; j++) //length-1
                     {
                         
-                        //Log(_focusReal.GetComponentsInChildren<SpriteRenderer>()[j].name);
                         _focusReal.GetComponentsInChildren<SpriteRenderer>()[j].sprite = DoH.SPRITES[j];
-                        /*var a = _focusReal.GetComponentsInChildren<SpriteRenderer>(true)[j].sprite.texture;
-                        Log("1");
-                        RenderTexture tmp = RenderTexture.GetTemporary(
-                            a.width,
-                            a.height,
-                            0,
-                            RenderTextureFormat.Default,
-                            RenderTextureReadWrite.Linear
-                            );
-                        Log("2");
-                        Graphics.Blit(a, tmp);
-                        Log(tmp == null);
-                        DumpRenderTexture(tmp, "C:/Users/ghaem/Desktop/SavedScreen" + j + ".png");*/
-
-                        // C:/Users/egsha/SavedScreen.png
                     }
                     for (int j = 0; j < _focusReal.GetComponentsInChildren<ParticleSystem>(true).Length; j++)
                     {
@@ -482,11 +465,15 @@ namespace DoH
                 {
                     Log("Hornet: Activate Air turbo sphere mode, DIE little Ghost.");
                     go1.SetActive(true);
+                    _control.ChangeTransition("Move Choice A", "AIRDASH", "GDash Antic");
+                    _control.ChangeTransition("Move Choice B", "AIRDASH", "CA Antic");
                     _control.ChangeTransition("Move Choice A", "SPHERE A", "GDash Antic");
                     _control.ChangeTransition("Move Choice B", "SPHERE A", "CA Antic");
                     _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
                     yield return new WaitForSeconds(3f);
-                    go1.SetActive(false); 
+                    go1.SetActive(false);
+                    _control.ChangeTransition("Move Choice A", "AIRDASH", "Set ADash");
+                    _control.ChangeTransition("Move Choice B", "AIRDASH", "Set ADash");
                     _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
                     _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
@@ -531,9 +518,21 @@ namespace DoH
                     go2.SetActive(true);
                     _control.ChangeTransition("G Sphere?", "SPHERE G", "Move Choice B");
                     _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
+
+                    _control.ChangeTransition("Move Choice A", "AIRDASH", "GDash Antic");
+                    _control.ChangeTransition("Move Choice B", "AIRDASH", "CA Antic");
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "GDash Antic");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "CA Antic");
+                    _control.ChangeTransition("Move Choice A", "THROW", "GDash Antic");
                     yield return new WaitForSeconds(3f);
                     go2.SetActive(false);
                     _control.ChangeTransition("G Sphere?", "SPHERE G", "Sphere Antic G");
+                    _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
+
+                    _control.ChangeTransition("Move Choice A", "AIRDASH", "Set ADash");
+                    _control.ChangeTransition("Move Choice B", "AIRDASH", "Set ADash");
+                    _control.ChangeTransition("Move Choice A", "SPHERE A", "Set Sphere A");
+                    _control.ChangeTransition("Move Choice B", "SPHERE A", "Set Sphere A");
                     _control.ChangeTransition("Move Choice A", "THROW", "Throw Antic");
                 }
                 else if (secondPhase)
@@ -606,8 +605,8 @@ namespace DoH
 
             Log("Remove Evade when hit because it's dumb and also makes it so when hit hornet has a higher chance of either attacking or jumping");
             _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[0] = 0f;
-            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[1] = 0.5f;
-            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[2] = 0f;
+            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[1] = 0f;
+            _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[2] = 0.5f;
             _control.GetAction<SendRandomEvent>("Dmg Response", 0).weights[3] = 0.5f;
             _control.ChangeTransition("Dmg Response", "JUMP", "Jump Antic");
             _control.ChangeTransition("Dmg Response", "Counter", "CA Antic");
@@ -724,7 +723,8 @@ namespace DoH
         public static int focusAmount = 0;
         public static int gndOrAir;
         public static float HornetDirect;
-        float timeFocusing = 10f;  
+        float timeFocusing = 8f;
+        bool isFocus = false;
         bool isDashing = false;
         bool firstFinal = true;
 
@@ -767,7 +767,7 @@ namespace DoH
                     num++;
                     // Log("Dont Sphere");
                 }
-                if (num > 60)
+                if (num > 45)
                 {
                     canSphere = true;
                     //Log("can sphere");
@@ -874,14 +874,16 @@ namespace DoH
                     }
                     if (timeFocusing <= 0f)
                     {
-                        var rand = Random.Range(0, 2);
-                        timeFocusing = 12f; 
-                        if (rand == 0)
+                        //var rand = Random.Range(0, 2);
+                        timeFocusing = 8f; 
+                        if (isFocus)
                         {
+                            isFocus = false;
                             StartCoroutine(randFocus());
                         }
                         else
                         {
+                            isFocus = true;
                             StartCoroutine(DestroyBeeBrain());
                         }
                     }
