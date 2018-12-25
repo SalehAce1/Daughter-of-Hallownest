@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine;
 using HutongGames.PlayMaker.Actions;
+using UnityEngine.SceneManagement;
+using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using Logger = Modding.Logger;
 
 namespace DoH
@@ -20,10 +22,27 @@ namespace DoH
         private void Start()
         {
             Logger.Log("[Daughter of Hallownest] Added HornetFinder MonoBehaviour");
-            DontDestroyOnLoad(this);
             StartCoroutine(loadingMantis());
+            USceneManager.activeSceneChanged += SceneChanged;
+            
         }
-        private void Update()
+        private void SceneChanged(Scene arg0, Scene arg1)
+        {
+            if (arg1.name != "GG_Hornet_2") return;
+
+            StartCoroutine(AddComponent());
+        }
+        private static IEnumerator AddComponent()
+        {
+            yield return null;
+
+            GameObject.Find("Hornet Boss 2").AddComponent<Hornet>();
+        }
+        private void OnDestroy()
+        {
+            USceneManager.activeSceneChanged -= SceneChanged;
+        }
+        /*private void Update()
         {
             if (!PlayerData.instance.hornetOutskirtsDefeated) return;
 
@@ -31,7 +50,7 @@ namespace DoH
             _hornet = GameObject.Find("Hornet Boss 2");
             if (_hornet == null) return;
             _hornet.AddComponent<Hornet>();
-        }
+        }*/
         IEnumerator loadingMantis() 
         {
             //GameCameras.instance.cameraFadeFSM.Fsm.Event("FADE INSTANT");

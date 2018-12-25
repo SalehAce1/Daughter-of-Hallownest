@@ -50,6 +50,7 @@ namespace DoH
         private bool finalPhase = false;
         private bool secondPhase = false;
         private bool firstPhase = true;
+        private float[] _origFps;
 
         public void grubberAttack()
         {
@@ -243,8 +244,8 @@ namespace DoH
         {
             for (int i = 0; i < 4; i++)
             {
-                var randX = Random.Range(20f, 35f);
-                var randY = Random.Range(23.5f, 35f);
+                var randX = Random.Range(21f, 35f);
+                var randY = Random.Range(24.5f, 35f);
                 _focusReal = Instantiate(HornetFinder._focus);
                 _focusReal.SetActive(true);
                 _focusReal.transform.SetPosition2D(randX, randY);
@@ -397,7 +398,6 @@ namespace DoH
         {
             Log("Added Hornet Mono");
 
-            if (!PlayerData.instance.hornetOutskirtsDefeated) return;
             if (!DoH.Instance.IsInHall) return;
             _hm = gameObject.GetComponent<HealthManager>();
             _stunControl = gameObject.LocateMyFSM("Stun Control");
@@ -408,7 +408,6 @@ namespace DoH
 
         private void Start()
         {
-            if (!PlayerData.instance.hornetOutskirtsDefeated) return;
             if (!DoH.Instance.IsInHall) return;
 
             CanvasUtil.CreateFonts();
@@ -1067,6 +1066,7 @@ namespace DoH
         private void OnDestroy()
         {
             Destroy(canvas);
+
         }
         private static void Log(object obj)
         {
