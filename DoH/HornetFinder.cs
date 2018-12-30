@@ -59,7 +59,7 @@ namespace DoH
             //yield return null;
             GameManager.instance.LoadScene("GG_Mantis_Lords");
             yield return null;
-            Resources.LoadAll<GameObject>("");
+           
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 if (i.name == "Shot Mantis Lord")
@@ -82,7 +82,7 @@ namespace DoH
             Logger.Log("Wait2");
             GameManager.instance.LoadScene("GG_Radiance");
             yield return null;
-            Resources.LoadAll<GameObject>("");
+            
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 if (i.name == "Radiant Orb")
@@ -105,7 +105,7 @@ namespace DoH
             Logger.Log("Wait3");
             GameManager.instance.LoadScene("GG_Hollow_Knight");
             yield return null;
-            Resources.LoadAll<GameObject>("");
+            
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 //Logger.Log("PV " + i.name);
@@ -129,7 +129,7 @@ namespace DoH
             Logger.Log("Wait4");
             GameManager.instance.LoadScene("GG_Hive_Knight");
             yield return null;
-            Resources.LoadAll<GameObject>("");
+            
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 
@@ -169,7 +169,7 @@ namespace DoH
             Logger.Log("Wait5");
             GameManager.instance.LoadScene("GG_Grimm_Nightmare");
             yield return null;
-            Resources.LoadAll<GameObject>("");
+           
             foreach (var i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 if (i.name == "Nightmare Firebat(Clone)")

@@ -102,7 +102,7 @@ namespace DoH
 
                     // Create texture from bytes
                     var tex = new Texture2D(1, 1);
-                    tex.LoadImage(buffer);
+                    tex.LoadImage(buffer,true);
                     
 
                     // Create sprite from texture
