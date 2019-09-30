@@ -28,34 +28,17 @@ namespace DoH
                 HeroController.instance.TakeDamage(HeroController.instance.gameObject, GlobalEnums.CollisionSide.other, 1, 1);
             }
             
-            gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 10f);
+           
             
         }
-
-        void FixedUpdate()
+        IEnumerator Start()
         {
-            try
-            {
-                if (this.gameObject.activeSelf && !firstAct)
-                {
-                    firstAct = true;
-                    timeBeforeDeath = 1.5f;
-                }
-                if (firstAct)
-                {
-                    timeBeforeDeath -= Time.deltaTime;
-                }
-                if (timeBeforeDeath <= 0)
-                {
-                    firstAct = false;
-                    Destroy(gameObject);
-                }
-            }
-            catch(System.Exception e)
-            {
-                Log(e);
-            }
+            yield return new WaitWhile(() => !gameObject.activeSelf);
+            gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 10f);
+            yield return new WaitForSeconds(1.5f);
+            Destroy(gameObject);
         }
+        
         private static void Log(object obj)
         {
             Logger.Log("[Fire Particle] " + obj);

@@ -191,6 +191,7 @@ namespace DoH
             float timer = 0.5f;
             while (_anim.CurrentClip.name == "G Dash" && timer >= 0)
             {
+                yield return new WaitForEndOfFrame();
                 try
                 {
                     allParticles.Add(Instantiate(DoH.wavePref));
@@ -209,7 +210,6 @@ namespace DoH
                     Log(e);
                 }
                 timer -= Time.fixedDeltaTime;
-                yield return null;
             }
         }
         //bool beeHere;
@@ -276,28 +276,6 @@ namespace DoH
                 yield return new WaitForSeconds(0.5f);
                
             }
-        }
-
-
-
-        public void SaveTexture()
-        {
-            
-        }
-
-        public void DumpRenderTexture(RenderTexture rt, string pngOutPath)
-        {
-            var oldRT = RenderTexture.active;
-            Log("3");
-            var tex = new Texture2D(rt.width, rt.height);
-            Log("4");
-            RenderTexture.active = rt;
-            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-            tex.Apply();
-            Log("5");
-            File.WriteAllBytes(pngOutPath, tex.EncodeToPNG());
-            RenderTexture.active = oldRT;
-            Log("6");
         }
 
         IEnumerator orbThrow()
@@ -409,13 +387,12 @@ namespace DoH
         private void Start()
         {
             if (!DoH.Instance.IsInHall) return;
-
             CanvasUtil.CreateFonts();
-            canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(1920, 1080));
-            UnityEngine.Object.DontDestroyOnLoad(canvas); //600 50
-            textExample = CanvasUtil.CreateTextPanel(canvas, "", 30, TextAnchor.MiddleLeft, new CanvasUtil.RectData(new Vector2(700, 100), new Vector2(-560, 805), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
+            canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(1536f, 864f));
+            UnityEngine.Object.DontDestroyOnLoad(canvas);
+            textExample = CanvasUtil.CreateTextPanel(canvas, "", 35, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(700, 100), new Vector2(-0, 50), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
             textExample.color = new Color(1f, 1f, 1f, 1f);
-
+            textExample.font = CanvasUtil.GetFont("Perpetua");
             timeLeft = 2f;
 
             // No stunning

@@ -12,14 +12,12 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 namespace DoH
 {
     [UsedImplicitly]
-    public class DoH : Mod<VoidModSettings>, ITogglableMod
+    public class DoH : Mod, ITogglableMod
     {
         public static DoH Instance;
-
         private string _lastScene;
-
+        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
         internal bool IsInHall => _lastScene == "GG_Workshop";
-
         public static readonly IList<Sprite> SPRITES = new List<Sprite>();
 
         public static GameObject weaverPref;
@@ -30,13 +28,32 @@ namespace DoH
 
         public override string GetVersion()
         {
-            return FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(DoH)).Location).FileVersion;
+            return "2.0.0.0.0";
         }
 
-        public override void Initialize()
+        public override List<(string, string)> GetPreloadNames()
         {
-            Instance = this;
+            return new List<(string, string)>
+            {
+                ("GG_Mantis_Lords", "Shot Mantis Lord"),
+                ("GG_Radiance", "Boss Control/Absolute Radiance"),
+                ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast (4)/Blast"),
+                ("GG_Hive_Knight", "Battle Scene/Droppers/Bee Dropper (1)"),
+                ("Grimm_Nightmare","Grimm Control/Nightmare Grimm Boss"),
+            };
+        }
 
+        public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
+        {
+            preloadedGO.Add("mantis", preloadedObjects["GG_Mantis_Lords"]["Shot Mantis Lord"]);
+            preloadedGO.Add("rad", preloadedObjects["GG_Radiance"]["Boss Control/Absolute Radiance"]);
+            preloadedGO.Add("blast", preloadedObjects["GG_Hollow_Knight"]["Battle Scene/Focus Blasts/HK Prime Blast (4)/Blast"]);
+            preloadedGO.Add("bee", preloadedObjects["GG_Hive_Knight"]["Battle Scene/Droppers/Bee Dropper (1)"]);
+            preloadedGO.Add("grimm", preloadedObjects["Grimm_Nightmare"]["Grimm Control/Nightmare Grimm Boss"]);
+            preloadedGO.Add("bat", null);
+
+            Instance = this;
+            Unload();
             Log("Initalizing.");
             ModHooks.Instance.AfterSavegameLoadHook += AfterSaveGameLoad;
             ModHooks.Instance.NewGameHook += AddComponent;
@@ -53,30 +70,17 @@ namespace DoH
                 {
                     weaverPref = i;
                 }
-                else if (i.name == "Grubberfly BeamR R")
-                {
-                    grubRPref = i;
-                }
-                else if (i.name == "Grubberfly BeamL R")
-                {
-                    grubLPref = i;
-                }
-                else if (i.name == "lava_particles_03")//grimm_flame_particle")//lava_particles_03") 
+                else if (i.name == "lava_particles_03")
                 {
                     wavePref = i;
-                    //ModCommon.GameObjectExtensions.PrintSceneHierarchyTree(wavePref);
                 }
                 else if (i.name == "outskirts_particles")
                 {
                     backgroundPart = i;
                 }
-                //Particle Wave: Void particle that emites radially 
-                //grimm_flame_particle: fire particle
-                //lava_particles_03: 4 red dots stuck together
             }
             PVSound.LoadAssets.LoadOrbSound();
 
-            //LoadGlobalSettings();
 
             foreach (string res in asm.GetManifestResourceNames())
             {
@@ -86,11 +90,6 @@ namespace DoH
 
                     continue;
                 }
-
-               /* bool pureFile = res.StartsWith("LostLord.pure") || res.StartsWith("LostLord.z");
-
-                if (GlobalSettings.Pure ? !pureFile : pureFile)
-                    continue;*/
 
                 using (Stream s = asm.GetManifestResourceStream(res))
                 {
@@ -103,8 +102,6 @@ namespace DoH
                     // Create texture from bytes
                     var tex = new Texture2D(1, 1);
                     tex.LoadImage(buffer,true);
-                    
-
                     // Create sprite from texture
                     SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 
