@@ -4,8 +4,6 @@ using System.Linq;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using JetBrains.Annotations;
-using ModCommon.Util;
-using ModCommon;
 using Modding;
 using UnityEngine;
 using UnityEngine.UI;
@@ -387,7 +385,6 @@ namespace DoH
         private void Start()
         {
             if (!DoH.Instance.IsInHall) return;
-            CanvasUtil.CreateFonts();
             canvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(1536f, 864f));
             UnityEngine.Object.DontDestroyOnLoad(canvas);
             textExample = CanvasUtil.CreateTextPanel(canvas, "", 35, TextAnchor.MiddleCenter, new CanvasUtil.RectData(new Vector2(700, 100), new Vector2(-0, 50), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f)), true).GetComponent<Text>();
@@ -563,6 +560,10 @@ namespace DoH
             _control.GetAction<GetAngleToTarget2D>("ADash Antic 2", 1).offsetY.Value += 3f;
             _control.ChangeTransition("Throw", "FINISHED", "Jump2");
             _control.ChangeTransition("Jump2", "FINISHED", "ADash Antic 2");
+            _control.AddAction("ADash Antic 2", new InvokeMethod(() =>
+             {
+                 _control.SetState("Fire");
+             }));
 
             //Make a better G Dash for attacking you while you heal
             var lookAtKnight = _control.GetAction<FaceObject>("GDash Antic", 2);
@@ -619,7 +620,7 @@ namespace DoH
                 Destroy(needles[i].LocateMyFSM("Control"));
                 needles[i].AddComponent<TinkEffect>();
                 UnityEngine.Object.Destroy(needles[i].GetComponent<NonBouncer>());
-                var tink = UnityEngine.Object.Instantiate(GameObject.Find("Needle Tink")).AddComponent<ModCommon.NeedleTink>();
+                var tink = UnityEngine.Object.Instantiate(GameObject.Find("Needle Tink")).AddComponent<NeedleTink>();
                 tink.SetParent(needles[i].transform);
                 needles[i].transform.SetPosition2D(gameObject.transform.GetPositionX(), gameObject.transform.GetPositionY());
                 needles[i].GetComponent<Rigidbody2D>().velocity = new Vector2(-15f, i * 5f);
@@ -627,6 +628,10 @@ namespace DoH
             }
             
             _control.InsertCoroutine("Throw", 0, needleSpread);
+            _control.InsertMethod("Throw", _control.GetState("Throw").Actions.Length + 1, () =>
+            {
+                gameObject.GetComponent<tk2dSpriteAnimator>().Play("Throw Recover");
+            });
 
             Log("fin.");
             try
@@ -755,6 +760,8 @@ namespace DoH
             if (finalPhase)
             {
                 HeroController.instance.ClearMP();
+                GameCameras.instance.soulOrbFSM.SendEvent("MP LOSE");
+                GameCameras.instance.soulVesselFSM.SendEvent("MP RESERVE ZERO");
                 if (_hm.hp <= 300 && !firstFinal2)
                 {
                     firstFinal2 = true;

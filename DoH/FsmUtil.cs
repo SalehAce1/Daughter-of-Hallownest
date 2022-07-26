@@ -5,7 +5,7 @@ using System.Reflection;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
-
+using System.Collections;
 // Taken and modified from
 // https://raw.githubusercontent.com/KayDeeTee/HK-NGG/master/src/
 
@@ -77,14 +77,10 @@ namespace DoH
 
         public static FsmStateAction GetAction(PlayMakerFSM fsm, string stateName, int index)
         {
-            foreach (FsmState t in fsm.FsmStates)
+            FsmState state=fsm.GetState(stateName);
+            if(state!=null)
             {
-                if (t.Name != stateName) continue;
-                FsmStateAction[] actions = t.Actions;
-
-                Array.Resize(ref actions, actions.Length + 1);
-
-                return actions[index];
+                return state.Actions[index];
             }
 
             return null;
@@ -132,6 +128,7 @@ namespace DoH
                     if (trans.EventName == eventName)
                     {
                         trans.ToState = toState;
+                        trans.ToFsmState = fsm.GetState(toState);
                     }
                 }
             }
@@ -146,7 +143,8 @@ namespace DoH
                 transitions.Add(new FsmTransition
                 {
                     FsmEvent = new FsmEvent(eventName),
-                    ToState = toState
+                    ToState = toState,
+                    ToFsmState= fsm.GetState(toState)
                 });
                 t.Transitions = transitions.ToArray();
             }
@@ -279,6 +277,10 @@ namespace DoH
         {
             InsertAction(fsm, stateName, new InvokeMethod(method), index);
         }
+        public static void InsertCoroutine(PlayMakerFSM fsm,string statename,int index,Func<IEnumerator> coro)
+        {
+            InsertAction(fsm,statename,new InvokeCoroutine(coro), index);
+        }
 
         private static void Log(string str)
         {
@@ -305,7 +307,26 @@ namespace DoH
             Finish();
         }
     }
+    public class InvokeCoroutine : FsmStateAction
+    {
+        private readonly Func<IEnumerator> _coro;
 
+        public InvokeCoroutine(Func<IEnumerator> f)
+        {
+            _coro = f;
+        }
+
+        private IEnumerator Coroutine()
+        {
+            yield return _coro?.Invoke();
+            Finish();
+        }
+
+        public override void OnEnter()
+        {
+            Fsm.Owner.StartCoroutine(Coroutine());
+        }
+    }
 
     ////////////////
     // Extensions //
@@ -342,7 +363,8 @@ namespace DoH
 
         public static void InsertMethod(this PlayMakerFSM fsm, string stateName, int index, Action method) =>
             FsmUtil.InsertMethod(fsm, stateName, index, method);
-
+        public static void InsertCoroutine(this PlayMakerFSM fsm, string stateName, int index, Func<IEnumerator> coro) =>
+          FsmUtil.InsertCoroutine(fsm, stateName, index, coro);
         public static void AddTransition(this PlayMakerFSM fsm, string stateName, string eventName, string toState) =>
             FsmUtil.AddTransition(fsm, stateName, eventName, toState);
 

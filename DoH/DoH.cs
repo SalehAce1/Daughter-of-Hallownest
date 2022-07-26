@@ -28,7 +28,7 @@ namespace DoH
 
         public override string GetVersion()
         {
-            return "2.0.0.0.0";
+            return "2.0.0.0.0-1.5";
         }
 
         public override List<(string, string)> GetPreloadNames()
@@ -55,9 +55,9 @@ namespace DoH
             Instance = this;
             Unload();
             Log("Initalizing.");
-            ModHooks.Instance.AfterSavegameLoadHook += AfterSaveGameLoad;
-            ModHooks.Instance.NewGameHook += AddComponent;
-            ModHooks.Instance.LanguageGetHook += LangGet;
+            ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
+            ModHooks.NewGameHook += AddComponent;
+            ModHooks.LanguageGetHook += LangGet;
             USceneManager.activeSceneChanged += LastScene;
 
             int ind = 0;
@@ -112,7 +112,7 @@ namespace DoH
 
         private void LastScene(Scene arg0, Scene arg1) => _lastScene = arg0.name;
 
-        private string LangGet(string key, string sheettitle)
+        private string LangGet(string key, string sheettitle,string orig)
         {
             switch (key)
             {
@@ -120,7 +120,7 @@ namespace DoH
                 case "HORNET_SUB": return "of Hallownest";
                 case "NAME_HORNET_2": return "Daughter of Hallownest";
                 case "GG_S_HORNET": return "Protector God, birthed, raised, and trained by three great Queens.";
-                default: return Language.Language.GetInternal(key, sheettitle);
+                default: return orig;
             }
         }
 
@@ -133,9 +133,9 @@ namespace DoH
 
         public void Unload()
         {
-            ModHooks.Instance.AfterSavegameLoadHook -= AfterSaveGameLoad;
-            ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.LanguageGetHook -= LangGet;
+            ModHooks.AfterSavegameLoadHook -= AfterSaveGameLoad;
+            ModHooks.NewGameHook -= AddComponent;
+            ModHooks.LanguageGetHook -= LangGet;
             USceneManager.activeSceneChanged -= LastScene;
 
             // ReSharper disable once Unity.NoNullPropogation
